@@ -216,7 +216,7 @@ function StepProjects({ data, patch }) {
           </div>
           <div style={{ flex: 2 }}>
             <label className="label" style={{ display: 'block', marginBottom: 6 }}>Deadline</label>
-            <Input value={data.truenorthDeadline} onChange={(v) => patch('truenorthDeadline', v)} placeholder="ej. Abr 2026" />
+            <Input value={data.truenorthDeadline} onChange={(v) => patch('truenorthDeadline', v)} type="date" placeholder="ej. Abr 2026" />
           </div>
         </div>
       </div>
@@ -233,7 +233,7 @@ function StepProjects({ data, patch }) {
         <SectionTitle>Tarot App 🔮</SectionTitle>
         <div>
           <label className="label" style={{ display: 'block', marginBottom: 6 }}>MVP Date</label>
-          <Input value={data.tarotMvpDate} onChange={(v) => patch('tarotMvpDate', v)} placeholder="ej. May 2026" />
+          <Input value={data.tarotMvpDate} onChange={(v) => patch('tarotMvpDate', v)} type="date" placeholder="ej. May 2026" />
         </div>
       </div>
     </div>

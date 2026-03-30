@@ -92,7 +92,7 @@ function TrueNorthCard() {
             </div>
             <div style={{ flex: 2 }}>
               <label className="label" style={{ display: 'block', marginBottom: 4 }}>Deadline</label>
-              <Input value={form.deadline} onChange={(v) => setForm((f) => ({ ...f, deadline: v }))} placeholder="ej. Abr 2026" />
+              <Input value={form.deadline} onChange={(v) => setForm((f) => ({ ...f, deadline: v }))} type="date" placeholder="ej. Abr 2026" />
             </div>
           </div>
           <div>
@@ -255,7 +255,7 @@ function TarotCard() {
             </div>
             <div style={{ flex: 2 }}>
               <label className="label" style={{ display: 'block', marginBottom: 4 }}>MVP Date</label>
-              <Input value={meta.mvpDate} onChange={(v) => setMeta((m) => ({ ...m, mvpDate: v }))} placeholder="ej. May 2026" />
+              <Input value={meta.mvpDate} onChange={(v) => setMeta((m) => ({ ...m, mvpDate: v }))} type="date" placeholder="ej. May 2026" />
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
