@@ -23,11 +23,22 @@ const QTY_PATTERN = /^(\d+(?:[.,]\d+)?(?:\/\d+)?)\s*(g|gr|kg|ml|l|taza|tazas|pie
 // Matches: "(o 100g de X)" or "(alt: 2 pzas)"
 const ALT_PATTERN = /\((?:o|alt[.:])?\s*(\d+[.,]?\d*)\s*(\w+)?\s+(?:de\s+)?([^)]+)\)/i
 
+function parseFraction(str) {
+  // Safely evaluates "1/2", "3/4", etc. without using eval()
+  const parts = str.split('/')
+  if (parts.length === 2) {
+    const num = parseFloat(parts[0])
+    const den = parseFloat(parts[1])
+    if (!isNaN(num) && !isNaN(den) && den !== 0) return num / den
+  }
+  return NaN
+}
+
 function parseQuantity(str) {
   const m = str.match(QTY_PATTERN)
   if (!m) return { quantity: 1, unit: '' }
   const raw = m[1].replace(',', '.')
-  const quantity = raw.includes('/') ? eval(raw) : parseFloat(raw) // safe: only numbers
+  const quantity = raw.includes('/') ? parseFraction(raw) : parseFloat(raw)
   const unit = (m[2] || '').toLowerCase()
   return { quantity: isNaN(quantity) ? 1 : quantity, unit }
 }

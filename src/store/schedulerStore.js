@@ -49,7 +49,10 @@ function makeBlock(partial) {
 function calcDuration(startTime, endTime) {
   const [sh, sm] = startTime.split(':').map(Number)
   const [eh, em] = endTime.split(':').map(Number)
-  return (eh * 60 + em) - (sh * 60 + sm)
+  let duration = (eh * 60 + em) - (sh * 60 + sm)
+  // Handle midnight-crossing blocks (e.g. 23:00 → 01:00)
+  if (duration < 0) duration += 24 * 60
+  return duration
 }
 
 // ─── DEFAULT WEEK GENERATOR ───────────────────────────────────────────────────

@@ -60,22 +60,34 @@ export async function* chat(messages, model = DEFAULT_MODEL, signal) {
 
   const reader  = res.body.getReader()
   const decoder = new TextDecoder()
+  let buffer    = ''
 
   try {
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
-      const chunk = decoder.decode(value, { stream: true })
-      for (const line of chunk.split('\n')) {
+      // Accumulate chunks — network may split a JSON line across multiple reads
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      // Keep the last (possibly incomplete) fragment in the buffer
+      buffer = lines.pop() ?? ''
+      for (const line of lines) {
         if (!line.trim()) continue
         try {
           const obj = JSON.parse(line)
           if (obj.message?.content) yield obj.message.content
           if (obj.done) return
         } catch {
-          // partial JSON line — skip
+          // Malformed line — discard silently
         }
       }
+    }
+    // Flush any remaining buffered data after stream closes
+    if (buffer.trim()) {
+      try {
+        const obj = JSON.parse(buffer)
+        if (obj.message?.content) yield obj.message.content
+      } catch { /* ignore incomplete trailing data */ }
     }
   } finally {
     clearTimeout(timeout)
