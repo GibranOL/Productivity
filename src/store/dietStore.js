@@ -24,6 +24,19 @@ export const CATEGORY_ICONS = {
   lacteos: '🥛', granos: '🌾', bebidas: '💧', otros: '📦',
 }
 
+// ─── PURE HELPER — no side effects, safe to call from render/selectors ───────
+function computeExpiryStatus(item) {
+  if (!item.expiryDate) return 'ok'
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const exp = new Date(item.expiryDate + 'T00:00:00')
+  const diffDays = Math.floor((exp - today) / 86400000)
+  return diffDays < 0 ? 'expired'
+    : diffDays <= 1 ? 'expiring_soon'
+    : diffDays <= 3 ? 'use_next'
+    : 'ok'
+}
+
 const useDietStore = create(
   persist(
     (set, get) => ({
@@ -162,9 +175,13 @@ const useDietStore = create(
         return { template, day, label }
       },
 
+      // Pure read — computes status on the fly without calling any setter.
+      // Call refreshInventoryStatus() separately (e.g. on tab mount) to persist
+      // the status back to the store if you need it in the UI.
       getExpiringItems: () => {
-        get().refreshInventoryStatus()
-        return get().inventory.filter((i) => ['expiring_soon', 'use_next', 'expired'].includes(i.status))
+        return get().inventory.filter((i) =>
+          ['expiring_soon', 'use_next', 'expired'].includes(computeExpiryStatus(i))
+        )
       },
     }),
 

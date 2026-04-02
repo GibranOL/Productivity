@@ -37,11 +37,9 @@ function getRangeStart(rangeId) {
 
 function blockDate(block) {
   if (block.timerStart) return new Date(block.timerStart)
-  // Approximate from current week + scheduler day
-  const mon = getMonday(0)
-  const d = new Date(mon)
-  d.setDate(mon.getDate() + block.day)
-  return d
+  // No reliable date available — return null so the block is excluded
+  // from range-based filters rather than being mis-attributed to this week.
+  return null
 }
 
 function habitCount(log) {
@@ -375,12 +373,13 @@ export default function TabAnalytics() {
 
   const rangeStart = useMemo(() => getRangeStart(range), [range])
 
-  // Filtered completed blocks within range
+  // Filtered completed blocks within range.
+  // Blocks without timerStart are excluded (no reliable date to compare).
   const doneBlocks = useMemo(() => {
     return blocks.filter((b) => {
       if (b.status !== 'done' && b.status !== 'extended') return false
       const d = blockDate(b)
-      return d >= rangeStart
+      return d !== null && d >= rangeStart
     })
   }, [blocks, rangeStart])
 
@@ -436,11 +435,13 @@ export default function TabAnalytics() {
     return result
   }, [logs])
 
-  // Block completion rate
+  // Block completion rate — only counts blocks with a known date
   const completionRate = useMemo(() => {
-    const relevant = blocks.filter((b) =>
-      ['done', 'extended', 'skipped'].includes(b.status) && blockDate(b) >= rangeStart
-    )
+    const relevant = blocks.filter((b) => {
+      if (!['done', 'extended', 'skipped'].includes(b.status)) return false
+      const d = blockDate(b)
+      return d !== null && d >= rangeStart
+    })
     if (!relevant.length) return 0
     const done = relevant.filter((b) => b.status !== 'skipped').length
     return Math.round((done / relevant.length) * 100)
@@ -454,11 +455,14 @@ export default function TabAnalytics() {
     return Math.round((total / (days.length * 4)) * 100)
   }, [logs, rangeStart])
 
-  // Extended blocks
-  const extendedCount = useMemo(
-    () => blocks.filter((b) => b.status === 'extended' && blockDate(b) >= rangeStart).length,
-    [blocks, rangeStart]
-  )
+  // Extended blocks — only those with a known date
+  const extendedCount = useMemo(() => {
+    return blocks.filter((b) => {
+      if (b.status !== 'extended') return false
+      const d = blockDate(b)
+      return d !== null && d >= rangeStart
+    }).length
+  }, [blocks, rangeStart])
 
   // Top 5 blocks by actual duration
   const topBlocks = useMemo(

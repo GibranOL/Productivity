@@ -1,9 +1,9 @@
 import * as pdfjsLib from 'pdfjs-dist'
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url'
 import { categorizeIngredient, getShelfLife } from './ingredientNormalizer'
 
-// pdfjs worker — use CDN to avoid bundling issues
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+// Bundle the worker locally — no CDN dependency at runtime
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker
 
 // ─── MEAL TYPE DETECTION ──────────────────────────────────────────────────────
 const MEAL_HEADERS = [
