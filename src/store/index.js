@@ -4,7 +4,7 @@ import { getDayKey } from '../utils/date'
 
 const GYM_DAYS = [1, 2, 3, 5, 6] // Lun/Mar/Mié/Vie/Sáb (0=Dom)
 
-function defaultDayLog() {
+export function defaultDayLog() {
   return {
     sleep: null,
     gym: null,
@@ -77,14 +77,30 @@ const useStore = create(
 
       // ─── USER ACTIONS ────────────────────────────────────────────
       setUser: (patch) =>
-        set((s) => ({ user: { ...s.user, ...patch } })),
+        set((s) => ({
+          user: {
+            ...s.user,
+            ...patch,
+            // clamp gymDays 0-7
+            ...(patch.gymDays !== undefined
+              ? { gymDays: Math.max(0, Math.min(7, patch.gymDays)) }
+              : {}),
+          },
+        })),
 
       // ─── PROJECT ACTIONS ─────────────────────────────────────────
       setProject: (key, patch) =>
         set((s) => ({
           projects: {
             ...s.projects,
-            [key]: { ...s.projects[key], ...patch },
+            [key]: {
+              ...s.projects[key],
+              ...patch,
+              // clamp pct 0-100
+              ...(patch.pct !== undefined
+                ? { pct: Math.max(0, Math.min(100, patch.pct)) }
+                : {}),
+            },
           },
         })),
 

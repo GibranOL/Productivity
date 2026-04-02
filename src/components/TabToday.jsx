@@ -1,6 +1,7 @@
 import useStore from '../store/index'
+import { defaultDayLog } from '../store/index'
 import { Card, Btn, ProgressBar, Badge, SectionTitle, Toggle } from './UI'
-import { getCircadianInsight, getDaySchedule, getTodayDow, getTonightPlan, isGymDay } from '../utils/date'
+import { getCircadianInsight, getDaySchedule, getTodayDow, getTonightPlan, isGymDay, getDayKey } from '../utils/date'
 
 const TAG_COLORS = {
   work:  'var(--teal)',
@@ -27,12 +28,11 @@ export default function TabToday() {
   const tonight = getTonightPlan(dow)
   const gymDay = isGymDay(dow)
 
-  const getTodayLog   = useStore((s) => s.getTodayLog)
   const setEnergy     = useStore((s) => s.setEnergy)
   const setHabit      = useStore((s) => s.setHabit)
   const patchFocusBlock = useStore((s) => s.patchFocusBlock)
-
-  const log = getTodayLog()
+  // Reactive subscription — re-renders whenever today's log changes
+  const log = useStore((s) => s.logs[getDayKey()] || defaultDayLog())
   const hasTarot = [2, 4, 6].includes(dow)
 
   return (
@@ -110,13 +110,15 @@ function EnergyCard({ energy, setEnergy }) {
         </svg>
         <div style={{ display: 'flex', gap: 8 }}>
           <button
+            aria-label="Reducir energía"
             onClick={() => setEnergy(energy - 1)}
-            style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border-mid)', background: 'var(--bg3)', color: 'var(--text)', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            style={{ width: 44, height: 44, borderRadius: 8, border: '1px solid var(--border-mid)', background: 'var(--bg3)', color: 'var(--text)', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             −
           </button>
           <button
+            aria-label="Aumentar energía"
             onClick={() => setEnergy(energy + 1)}
-            style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border-mid)', background: 'var(--bg3)', color: 'var(--text)', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            style={{ width: 44, height: 44, borderRadius: 8, border: '1px solid var(--border-mid)', background: 'var(--bg3)', color: 'var(--text)', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             +
           </button>
         </div>
@@ -157,7 +159,7 @@ function HabitsCard({ log, setHabit, gymDay }) {
                 background: bg,
                 border: `1px solid ${border}`,
                 borderRadius: 8,
-                padding: '7px 10px',
+                padding: '9px 10px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',

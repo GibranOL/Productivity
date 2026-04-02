@@ -10,7 +10,8 @@ import AIAssistant from './AIAssistant'
 import CheckInModal from './CheckInModal'
 import ActiveBlockTimer from './ActiveBlockTimer'
 import BlockTransitionModal from './BlockTransitionModal'
-import { formatDate, getTodayDow } from '../utils/date'
+import { formatDate, getTodayDow, getDayKey } from '../utils/date'
+import { defaultDayLog } from '../store/index'
 import { scheduleNotificationsForToday } from '../utils/notifications'
 
 // En móvil solo icon; en desktop icon + label
@@ -24,17 +25,17 @@ const TABS = [
 ]
 
 export default function Dashboard() {
-  const activeTab   = useStore((s) => s.activeTab)
-  const modal       = useStore((s) => s.modal)
-  const setTab      = useStore((s) => s.setTab)
-  const openModal   = useStore((s) => s.openModal)
-  const user        = useStore((s) => s.user)
-  const getTodayLog = useStore((s) => s.getTodayLog)
+  const activeTab = useStore((s) => s.activeTab)
+  const modal     = useStore((s) => s.modal)
+  const setTab    = useStore((s) => s.setTab)
+  const openModal = useStore((s) => s.openModal)
+  const user      = useStore((s) => s.user)
+  // Reactive subscription to today's log — header pill updates instantly
+  const log = useStore((s) => s.logs[getDayKey()] || defaultDayLog())
 
   const [transitionBlock, setTransitionBlock] = useState(null)
   const [showAI, setShowAI] = useState(false)
 
-  const log = getTodayLog()
   const dow = getTodayDow()
 
   // Schedule notifications once per day on mount

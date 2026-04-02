@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import useStore from '../store/index'
+import { defaultDayLog } from '../store/index'
 import { ModalOverlay, Toggle, Btn, SectionTitle, Divider } from './UI'
-import { isGymDay, getTodayDow } from '../utils/date'
+import { isGymDay, getTodayDow, getDayKey } from '../utils/date'
 
 const FOCUS_PROJECTS = {
   1: 'TrueNorth', 2: 'Job Search', 3: 'TrueNorth',
@@ -10,15 +11,15 @@ const FOCUS_PROJECTS = {
 
 export default function CheckInModal() {
   const closeModal      = useStore((s) => s.closeModal)
-  const getTodayLog     = useStore((s) => s.getTodayLog)
   const setHabit        = useStore((s) => s.setHabit)
   const patchFocusBlock = useStore((s) => s.patchFocusBlock)
   const patchTodayLog   = useStore((s) => s.patchTodayLog)
+  // Reactive subscription — always reflects current habit/focus state
+  const log = useStore((s) => s.logs[getDayKey()] || defaultDayLog())
 
   const dow     = getTodayDow()
   const gymDay  = isGymDay(dow)
   const hasTarot = [2, 4, 6].includes(dow)
-  const log     = getTodayLog()
 
   const [scores, setScores] = useState([
     log.focusBlocks[0]?.score || null,

@@ -41,7 +41,12 @@ export default function ActiveBlockTimer({ onBlockEnded }) {
     }
   }, [now, block, fired])
 
+  // Guard: no block, or block not properly started (malformed / stale state)
   if (!block) return null
+  if (
+    typeof block.timerStart !== 'number' || block.timerStart <= 0 ||
+    typeof block.timerEnd   !== 'number' || block.timerEnd   <= 0
+  ) return null
 
   const sec       = SECTIONS[block.section] || SECTIONS.project
   const elapsed   = block.timerStart ? Math.max(0, now - block.timerStart) : 0
