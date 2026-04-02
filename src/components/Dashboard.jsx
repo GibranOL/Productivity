@@ -2,15 +2,18 @@ import useStore from '../store/index'
 import TabToday from './TabToday'
 import TabWeekly from './TabWeekly'
 import TabProjects from './TabProjects'
+import Scheduler from './Scheduler'
 import CheckInModal from './CheckInModal'
 import { formatDate, getTodayDow } from '../utils/date'
 import { useEffect } from 'react'
 import { scheduleNotificationsForToday } from '../utils/notifications'
 
+// En móvil solo icon; en desktop icon + label
 const TABS = [
-  { id: 'today',    label: 'Hoy',       icon: '⚡' },
-  { id: 'weekly',   label: 'Semana',    icon: '📊' },
-  { id: 'projects', label: 'Proyectos', icon: '🚀' },
+  { id: 'today',     label: 'Hoy',       icon: '⚡' },
+  { id: 'weekly',    label: 'Semana',    icon: '📅' },
+  { id: 'scheduler', label: 'Scheduler', icon: '🗓' },
+  { id: 'projects',  label: 'Proyectos', icon: '🚀' },
 ]
 
 export default function Dashboard() {
@@ -84,14 +87,14 @@ export default function Dashboard() {
         </div>
 
         {/* Tab nav */}
-        <div style={{ display: 'flex', padding: '0 16px 0', gap: 4 }}>
+        <div style={{ display: 'flex', padding: '0 8px', gap: 2, overflowX: 'auto' }}>
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
               style={{
-                flex: 1,
-                padding: '8px 4px',
+                flex: '0 0 auto',
+                padding: '8px 10px',
                 background: 'none',
                 border: 'none',
                 borderBottom: `2px solid ${activeTab === t.id ? 'var(--teal)' : 'transparent'}`,
@@ -104,11 +107,12 @@ export default function Dashboard() {
                 color: activeTab === t.id ? 'var(--teal)' : 'var(--text-dim)',
                 fontFamily: 'var(--sans)',
                 fontWeight: activeTab === t.id ? 600 : 400,
-                fontSize: 13,
+                fontSize: 12,
+                whiteSpace: 'nowrap',
               }}
             >
-              <span style={{ fontSize: 14 }}>{t.icon}</span>
-              {t.label}
+              <span style={{ fontSize: 15 }}>{t.icon}</span>
+              <span className="tab-label">{t.label}</span>
             </button>
           ))}
         </div>
@@ -116,9 +120,10 @@ export default function Dashboard() {
 
       {/* ── CONTENT ── */}
       <main style={{ flex: 1, padding: '16px 16px 0', maxWidth: 600, width: '100%', margin: '0 auto' }}>
-        {activeTab === 'today'    && <TabToday />}
-        {activeTab === 'weekly'   && <TabWeekly />}
-        {activeTab === 'projects' && <TabProjects />}
+        {activeTab === 'today'     && <TabToday />}
+        {activeTab === 'weekly'    && <TabWeekly />}
+        {activeTab === 'scheduler' && <Scheduler />}
+        {activeTab === 'projects'  && <TabProjects />}
       </main>
 
       {/* ── FAB ── */}

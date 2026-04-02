@@ -39,6 +39,23 @@
   --purple-dim: #a78bfa2e;
   --purple-glow:#a78bfa55;
 
+  /* ── Scheduler section colors ── */
+  --blue:       #3b82f6;
+  --blue-mid:   #3b82f666;
+  --blue-dim:   #3b82f618;
+
+  --indigo:     #6366f1;
+  --indigo-mid: #6366f166;
+  --indigo-dim: #6366f118;
+
+  --lime:       #84cc16;
+  --lime-mid:   #84cc1666;
+  --lime-dim:   #84cc1618;
+
+  --pink:       #ec4899;
+  --pink-mid:   #ec489966;
+  --pink-dim:   #ec489918;
+
   --text:        #e8edf5;
   --text-mid:    #8fa3b8;
   --text-dim:    #4a5a6e;
@@ -365,6 +382,11 @@ textarea.input { resize: vertical; min-height: 80px; }
 .anim-fade-in   { animation: fadeIn  0.2s ease; }
 .anim-slide-up  { animation: slideUp 0.22s ease; }
 .anim-scale-in  { animation: scaleIn 0.18s ease; }
+
+/* ── TAB LABELS: hide text on very small screens ── */
+@media (max-width: 360px) {
+  .tab-label { display: none; }
+}
 
 /* ── DIVIDER ── */
 .divider {
