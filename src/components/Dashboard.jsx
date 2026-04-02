@@ -6,6 +6,7 @@ import TabProjects from './TabProjects'
 import Scheduler from './Scheduler'
 import TabDiet from './diet/TabDiet'
 import TabAnalytics from './TabAnalytics'
+import AIAssistant from './AIAssistant'
 import CheckInModal from './CheckInModal'
 import ActiveBlockTimer from './ActiveBlockTimer'
 import BlockTransitionModal from './BlockTransitionModal'
@@ -31,6 +32,7 @@ export default function Dashboard() {
   const getTodayLog = useStore((s) => s.getTodayLog)
 
   const [transitionBlock, setTransitionBlock] = useState(null)
+  const [showAI, setShowAI] = useState(false)
 
   const log = getTodayLog()
   const dow = getTodayDow()
@@ -139,13 +141,40 @@ export default function Dashboard() {
         {activeTab === 'analytics' && <TabAnalytics />}
       </main>
 
-      {/* ── FAB ── */}
+      {/* ── FABs ── */}
+      {/* AI FAB — secundario, encima del check-in */}
+      <button
+        onClick={() => setShowAI(true)}
+        aria-label="Asistente AI"
+        style={{
+          position: 'fixed',
+          bottom: 'calc(76px + env(safe-area-inset-bottom))',
+          right: 20,
+          width: 46,
+          height: 46,
+          borderRadius: '50%',
+          background: 'var(--bg3)',
+          border: '1px solid var(--border-bright)',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
+          cursor: 'pointer',
+          fontSize: 20,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 30,
+          transition: 'var(--transition)',
+        }}
+      >
+        🤖
+      </button>
+      {/* Check-in FAB */}
       <button className="fab" onClick={() => openModal('checkin')} aria-label="Check-in">
         ✍️
       </button>
 
       {/* ── MODALS ── */}
       {modal === 'checkin' && <CheckInModal />}
+      {showAI && <AIAssistant onClose={() => setShowAI(false)} />}
       {transitionBlock && (
         <BlockTransitionModal
           block={transitionBlock}
