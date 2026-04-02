@@ -1,11 +1,13 @@
+import { useState, useEffect } from 'react'
 import useStore from '../store/index'
 import TabToday from './TabToday'
 import TabWeekly from './TabWeekly'
 import TabProjects from './TabProjects'
 import Scheduler from './Scheduler'
 import CheckInModal from './CheckInModal'
+import ActiveBlockTimer from './ActiveBlockTimer'
+import BlockTransitionModal from './BlockTransitionModal'
 import { formatDate, getTodayDow } from '../utils/date'
-import { useEffect } from 'react'
 import { scheduleNotificationsForToday } from '../utils/notifications'
 
 // En móvil solo icon; en desktop icon + label
@@ -17,12 +19,14 @@ const TABS = [
 ]
 
 export default function Dashboard() {
-  const activeTab  = useStore((s) => s.activeTab)
-  const modal      = useStore((s) => s.modal)
-  const setTab     = useStore((s) => s.setTab)
-  const openModal  = useStore((s) => s.openModal)
-  const user       = useStore((s) => s.user)
+  const activeTab   = useStore((s) => s.activeTab)
+  const modal       = useStore((s) => s.modal)
+  const setTab      = useStore((s) => s.setTab)
+  const openModal   = useStore((s) => s.openModal)
+  const user        = useStore((s) => s.user)
   const getTodayLog = useStore((s) => s.getTodayLog)
+
+  const [transitionBlock, setTransitionBlock] = useState(null)
 
   const log = getTodayLog()
   const dow = getTodayDow()
@@ -118,6 +122,9 @@ export default function Dashboard() {
         </div>
       </header>
 
+      {/* ── ACTIVE BLOCK TIMER BAR ── */}
+      <ActiveBlockTimer onBlockEnded={(block) => setTransitionBlock(block)} />
+
       {/* ── CONTENT ── */}
       <main style={{ flex: 1, padding: '16px 16px 0', maxWidth: 600, width: '100%', margin: '0 auto' }}>
         {activeTab === 'today'     && <TabToday />}
@@ -133,6 +140,12 @@ export default function Dashboard() {
 
       {/* ── MODALS ── */}
       {modal === 'checkin' && <CheckInModal />}
+      {transitionBlock && (
+        <BlockTransitionModal
+          block={transitionBlock}
+          onClose={() => setTransitionBlock(null)}
+        />
+      )}
     </div>
   )
 }

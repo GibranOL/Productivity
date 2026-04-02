@@ -28,12 +28,19 @@ const useStore = create(
       // ─── PERSISTENT STATE ───────────────────────────────────────
       user: {
         onboarded: false,
-        gymDays: 5,         // 5 = Lun/Mar/Mié/Vie/Sáb
+        gymDays: 5,
         sleepConfirm: 0,
         social: [],
         startEnergy: 7,
         notificationsEnabled: false,
+        notificationPermission: null, // null | 'granted' | 'denied'
       },
+
+      // streak tracking: { date: 'YYYY-MM-DD', count: number }
+      streak: { date: '', count: 0 },
+
+      // project time log: { [projectKey]: totalMinutes }
+      projectTime: { truenorth: 0, jobsearch: 0, tarot: 0 },
 
       projects: {
         truenorth: {
@@ -238,6 +245,34 @@ const useStore = create(
         return GYM_DAYS.includes(dow)
       },
 
+      // ─── PROJECT TIME TRACKING ───────────────────────────────────
+      logProjectTime: (projectKey, minutes) =>
+        set((s) => ({
+          projectTime: {
+            ...s.projectTime,
+            [projectKey]: (s.projectTime[projectKey] || 0) + minutes,
+          },
+        })),
+
+      // ─── STREAK TRACKING ─────────────────────────────────────────
+      updateStreak: (date, habitsDone) => {
+        const state = get()
+        const prev  = state.streak
+        const yesterday = new Date()
+        yesterday.setDate(yesterday.getDate() - 1)
+        const yKey = getDayKey(yesterday)
+        const newCount = (prev.date === yKey || prev.date === date)
+          ? (habitsDone ? prev.count + 1 : 0)
+          : (habitsDone ? 1 : 0)
+        set({ streak: { date, count: newCount } })
+      },
+
+      getStreak: () => get().streak.count,
+
+      // ─── NOTIFICATION PERMISSION ─────────────────────────────────
+      setNotificationPermission: (status) =>
+        set((s) => ({ user: { ...s.user, notificationPermission: status } })),
+
       // ─── UI ACTIONS ──────────────────────────────────────────────
       setTab:      (tab)  => set({ activeTab: tab }),
       openModal:   (name) => set({ modal: name }),
@@ -248,9 +283,11 @@ const useStore = create(
       name: 'gibran-os-v1',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        user:     state.user,
-        projects: state.projects,
-        logs:     state.logs,
+        user:        state.user,
+        projects:    state.projects,
+        logs:        state.logs,
+        streak:      state.streak,
+        projectTime: state.projectTime,
       }),
     }
   )

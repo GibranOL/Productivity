@@ -58,3 +58,35 @@ export function sendNotification(title, body) {
     icon: '/gibran-os/icons/icon-192.png',
   })
 }
+
+// ─── BLOCK-END NOTIFICATIONS ──────────────────────────────────────────────────
+// Map of blockId → timeoutId so we can cancel if needed
+const _blockTimers = {}
+
+export function scheduleBlockEndNotification(block) {
+  if (!('Notification' in window)) return
+  if (Notification.permission !== 'granted') return
+  if (!block.timerEnd) return
+
+  // Cancel any existing timer for this block
+  cancelBlockNotification(block.id)
+
+  const ms = block.timerEnd - Date.now()
+  if (ms <= 0) return
+
+  _blockTimers[block.id] = setTimeout(() => {
+    new Notification(`⏱️ Terminó: ${block.title || block.section}`, {
+      body: '¿Terminaste o le das más tiempo?',
+      icon: '/gibran-os/icons/icon-192.png',
+      badge: '/gibran-os/icons/icon-192.png',
+    })
+    delete _blockTimers[block.id]
+  }, ms)
+}
+
+export function cancelBlockNotification(blockId) {
+  if (_blockTimers[blockId]) {
+    clearTimeout(_blockTimers[blockId])
+    delete _blockTimers[blockId]
+  }
+}
