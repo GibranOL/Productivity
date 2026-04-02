@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import useSchedulerStore, { SECTIONS } from '../store/schedulerStore'
 import BlockCard from './BlockCard'
 import BlockEditor from './BlockEditor'
+import CalendarSync from './CalendarSync'
 import { Btn, SectionTitle } from './UI'
 
 const DAY_LABELS  = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
@@ -104,12 +105,15 @@ export default function Scheduler() {
   return (
     <div style={{ paddingBottom: 100, position: 'relative', zIndex: 1 }}>
       {/* ── HEADER ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, gap: 8 }}>
-        <SectionTitle style={{ marginBottom: 0 }}>SCHEDULER SEMANAL</SectionTitle>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Btn variant="ghost" size="sm" onClick={handleGenerate}>↺ Regenerar</Btn>
-          <Btn variant="primary" size="sm" onClick={() => openNew(todaySD >= 0 ? todaySD : 0)}>+ Bloque</Btn>
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+          <SectionTitle style={{ marginBottom: 0 }}>SCHEDULER SEMANAL</SectionTitle>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Btn variant="ghost" size="sm" onClick={handleGenerate}>↺ Regenerar</Btn>
+            <Btn variant="primary" size="sm" onClick={() => openNew(todaySD >= 0 ? todaySD : 0)}>+ Bloque</Btn>
+          </div>
         </div>
+        <CalendarSync />
       </div>
 
       {/* ── LEGEND ── */}

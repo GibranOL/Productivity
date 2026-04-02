@@ -40,6 +40,8 @@ function makeBlock(partial) {
     timerEnd: null,
     actualDuration: null,
     notes: '',
+    googleEventId: null,
+    pendingSync: false,
     ...partial,
   }
 }
@@ -150,6 +152,10 @@ const useSchedulerStore = create(
       blocks: [],
       currentWeekOffset: 0,
       activeBlockId: null,
+      syncStatus: 'idle',          // 'idle' | 'syncing' | 'synced' | 'error'
+      lastSyncedAt: null,          // timestamp
+      syncError: null,
+      deletedGoogleEventIds: [],   // gcal event IDs of deleted blocks (pending deletion on gcal)
 
       // ── CRUD ──────────────────────────────────────────────────────
       addBlock: (partial) => {
@@ -168,12 +174,10 @@ const useSchedulerStore = create(
         set((s) => ({
           blocks: s.blocks.map((b) => {
             if (b.id !== id) return b
-            const updated = { ...b, ...patch }
-            // Recalculate duration if times changed
+            const updated = { ...b, ...patch, pendingSync: true }
             if (patch.startTime || patch.endTime) {
               updated.duration = calcDuration(updated.startTime, updated.endTime)
             }
-            // Sync color/icon if section changed
             if (patch.section) {
               const sec = SECTIONS[patch.section] || SECTIONS.project
               updated.color = sec.color
@@ -183,11 +187,17 @@ const useSchedulerStore = create(
           }),
         })),
 
-      deleteBlock: (id) =>
+      deleteBlock: (id) => {
+        // If it had a gcal event, we surface it via deletedGoogleEventIds for the sync component to delete
+        const block = get().blocks.find((b) => b.id === id)
         set((s) => ({
           blocks: s.blocks.filter((b) => b.id !== id),
           activeBlockId: s.activeBlockId === id ? null : s.activeBlockId,
-        })),
+          deletedGoogleEventIds: block?.googleEventId
+            ? [...(s.deletedGoogleEventIds || []), block.googleEventId]
+            : (s.deletedGoogleEventIds || []),
+        }))
+      },
 
       moveBlock: (id, newDay, newStartTime) =>
         set((s) => ({
@@ -198,7 +208,7 @@ const useSchedulerStore = create(
             const eh = Math.floor(endMinutes / 60) % 24
             const em = endMinutes % 60
             const newEndTime = `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`
-            return { ...b, day: newDay, startTime: newStartTime, endTime: newEndTime }
+            return { ...b, day: newDay, startTime: newStartTime, endTime: newEndTime, pendingSync: true }
           }),
         })),
 
@@ -270,6 +280,23 @@ const useSchedulerStore = create(
 
       // ── WEEK NAVIGATION ───────────────────────────────────────────
       setWeekOffset: (n) => set({ currentWeekOffset: n }),
+
+      // ── GOOGLE CALENDAR SYNC ──────────────────────────────────────
+      setSyncStatus: (status, error = null) =>
+        set({ syncStatus: status, syncError: error, lastSyncedAt: status === 'synced' ? Date.now() : undefined }),
+
+      setGoogleEventId: (blockId, googleEventId) =>
+        set((s) => ({
+          blocks: s.blocks.map((b) =>
+            b.id === blockId ? { ...b, googleEventId, pendingSync: false } : b
+          ),
+        })),
+
+      clearPendingSync: () =>
+        set((s) => ({
+          blocks: s.blocks.map((b) => ({ ...b, pendingSync: false })),
+          deletedGoogleEventIds: [],
+        })),
 
       // ── SELECTORS ─────────────────────────────────────────────────
       getBlocksForDay: (day) => get().blocks.filter((b) => b.day === day),
