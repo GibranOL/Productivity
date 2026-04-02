@@ -298,6 +298,26 @@ const useStore = create(
     {
       name: 'gibran-os-v1',
       storage: createJSONStorage(() => localStorage),
+      // Increment version here whenever the persisted shape changes.
+      // Zustand will call migrate(storedState, storedVersion) automatically.
+      version: 1,
+      migrate(persisted, fromVersion) {
+        // v0 → v1: added notificationsEnabled, notificationPermission, projectTime, streak
+        if (fromVersion < 1) {
+          persisted.user = {
+            notificationsEnabled: false,
+            notificationPermission: null,
+            ...persisted.user,
+          }
+          if (!persisted.projectTime) {
+            persisted.projectTime = { truenorth: 0, jobsearch: 0, tarot: 0 }
+          }
+          if (!persisted.streak) {
+            persisted.streak = { date: '', count: 0 }
+          }
+        }
+        return persisted
+      },
       partialize: (state) => ({
         user:        state.user,
         projects:    state.projects,

@@ -188,6 +188,21 @@ const useDietStore = create(
     {
       name: 'gibran-os-diet-v1',
       storage: createJSONStorage(() => localStorage),
+      version: 1,
+      migrate(persisted, fromVersion) {
+        // v0 → v1: added rotationOverrides + inventory status field
+        if (fromVersion < 1) {
+          if (!persisted.rotationOverrides) persisted.rotationOverrides = {}
+          if (Array.isArray(persisted.inventory)) {
+            persisted.inventory = persisted.inventory.map((item) => ({
+              status: 'ok',
+              ...item,
+            }))
+          }
+          if (!Array.isArray(persisted.cookingSteps)) persisted.cookingSteps = []
+        }
+        return persisted
+      },
     }
   )
 )

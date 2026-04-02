@@ -4,6 +4,11 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   base: '/gibran-os/',
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['src/**/*.test.{js,jsx}'],
+  },
   optimizeDeps: {
     include: ['pdfjs-dist'],
   },

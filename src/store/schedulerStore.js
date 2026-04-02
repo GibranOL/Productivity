@@ -46,7 +46,7 @@ function makeBlock(partial) {
   }
 }
 
-function calcDuration(startTime, endTime) {
+export function calcDuration(startTime, endTime) {
   const [sh, sm] = startTime.split(':').map(Number)
   const [eh, em] = endTime.split(':').map(Number)
   let duration = (eh * 60 + em) - (sh * 60 + sm)
@@ -313,6 +313,24 @@ const useSchedulerStore = create(
     {
       name: 'gibran-os-scheduler-v1',
       storage: createJSONStorage(() => localStorage),
+      version: 1,
+      migrate(persisted, fromVersion) {
+        // v0 → v1: added Google Calendar sync fields + block-level googleEventId/pendingSync
+        if (fromVersion < 1) {
+          if (!('syncStatus' in persisted))          persisted.syncStatus = 'idle'
+          if (!('lastSyncedAt' in persisted))        persisted.lastSyncedAt = null
+          if (!('syncError' in persisted))           persisted.syncError = null
+          if (!('deletedGoogleEventIds' in persisted)) persisted.deletedGoogleEventIds = []
+          if (Array.isArray(persisted.blocks)) {
+            persisted.blocks = persisted.blocks.map((b) => ({
+              googleEventId: null,
+              pendingSync: false,
+              ...b,
+            }))
+          }
+        }
+        return persisted
+      },
     }
   )
 )
