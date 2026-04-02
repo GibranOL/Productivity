@@ -4,6 +4,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   base: '/gibran-os/',
+  optimizeDeps: {
+    include: ['pdfjs-dist'],
+  },
   plugins: [
     react(),
     VitePWA({

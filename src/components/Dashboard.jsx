@@ -4,6 +4,7 @@ import TabToday from './TabToday'
 import TabWeekly from './TabWeekly'
 import TabProjects from './TabProjects'
 import Scheduler from './Scheduler'
+import TabDiet from './diet/TabDiet'
 import CheckInModal from './CheckInModal'
 import ActiveBlockTimer from './ActiveBlockTimer'
 import BlockTransitionModal from './BlockTransitionModal'
@@ -16,6 +17,7 @@ const TABS = [
   { id: 'weekly',    label: 'Semana',    icon: '📅' },
   { id: 'scheduler', label: 'Scheduler', icon: '🗓' },
   { id: 'projects',  label: 'Proyectos', icon: '🚀' },
+  { id: 'diet',      label: 'Dieta',     icon: '🥗' },
 ]
 
 export default function Dashboard() {
@@ -131,6 +133,7 @@ export default function Dashboard() {
         {activeTab === 'weekly'    && <TabWeekly />}
         {activeTab === 'scheduler' && <Scheduler />}
         {activeTab === 'projects'  && <TabProjects />}
+        {activeTab === 'diet'      && <TabDiet />}
       </main>
 
       {/* ── FAB ── */}
