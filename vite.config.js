@@ -55,7 +55,10 @@ export default defineConfig({
     minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
     sourcemap: !!process.env.TAURI_DEBUG,
     rollupOptions: {
-      external: isTauri ? [] : ['@tauri-apps/plugin-notification'],
+      // @tauri-apps/plugin-notification is a native Tauri module — not an npm package.
+      // In PWA builds it's never called (guarded by isTauri()), so mark as external.
+      // In Tauri builds, Tauri's bundler resolves it via its own plugin system.
+      external: ['@tauri-apps/plugin-notification'],
     },
   },
 })
