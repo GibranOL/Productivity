@@ -20,7 +20,7 @@ const TAROT_NOTIFICATION = { h: 19, m: 30, title: 'BLOQUE 3 🔮', body: 'Tarot 
 export async function requestNotificationPermission() {
   if (isTauri()) {
     try {
-      const { requestPermission } = await import(/* @vite-ignore */ '@tauri-apps/plugin-notification')
+      const { requestPermission } = await import('@tauri-apps/plugin-notification')
       const result = await requestPermission()
       return result === 'granted'
     } catch {
@@ -65,7 +65,7 @@ export function scheduleNotificationsForToday() {
 export async function sendNotification(title, body) {
   if (isTauri()) {
     try {
-      const { sendNotification: tauriSend } = await import(/* @vite-ignore */ '@tauri-apps/plugin-notification')
+      const { sendNotification: tauriSend } = await import('@tauri-apps/plugin-notification')
       tauriSend({ title, body })
       return
     } catch {
