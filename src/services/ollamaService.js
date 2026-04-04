@@ -3,7 +3,7 @@
 // No auth required — Ollama is local-only by default
 
 const OLLAMA_BASE  = 'http://localhost:11434'
-const DEFAULT_MODEL = 'llama3.2:3b'
+const DEFAULT_MODEL = 'gemma4:e4b'
 const TIMEOUT_MS    = 30000
 
 // ─── STATUS ──────────────────────────────────────────────────────────────────
@@ -23,11 +23,26 @@ export async function checkOllamaStatus() {
   }
 }
 
+export async function getActiveModel() {
+  try {
+    const ctrl = new AbortController()
+    setTimeout(() => ctrl.abort(), 5000)
+    const res = await fetch(`${OLLAMA_BASE}/api/tags`, { signal: ctrl.signal })
+    if (!res.ok) return null
+    const { models } = await res.json()
+    const hasGemma = (models || []).some((m) => m.name === 'gemma4:e4b')
+    if (hasGemma) return 'gemma4:e4b'
+    return null // no fallback silencioso
+  } catch {
+    return null
+  }
+}
+
 // ─── STREAMING CHAT ──────────────────────────────────────────────────────────
 // Returns an AsyncGenerator that yields string chunks as they stream in.
 // Throws with { type: 'offline' | 'model_missing' | 'timeout' | 'error', message }
 
-export async function* chat(messages, model = DEFAULT_MODEL, signal) {
+export async function* chat(messages, model = DEFAULT_MODEL, signal, think = false) {
   const ctrl    = signal ? null : new AbortController()
   const abortSg = signal || ctrl.signal
   const timeout = ctrl
@@ -39,7 +54,7 @@ export async function* chat(messages, model = DEFAULT_MODEL, signal) {
     res = await fetch(`${OLLAMA_BASE}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model, messages, stream: true }),
+      body: JSON.stringify({ model, messages, stream: true, think }),
       signal: abortSg,
     })
   } catch (e) {
@@ -96,6 +111,12 @@ export async function* chat(messages, model = DEFAULT_MODEL, signal) {
 }
 
 // ─── SYSTEM PROMPT BUILDER ───────────────────────────────────────────────────
+
+export function buildSystemPromptWithMemory(memoryContextString, todayContext) {
+  const base = buildSystemPrompt(todayContext)
+  if (!memoryContextString) return base
+  return `${base}\n\n${memoryContextString}`
+}
 
 export function buildSystemPrompt(context) {
   const {

@@ -1,3 +1,6 @@
+// ─── TAURI DETECTION ─────────────────────────────────────────────────────────
+const isTauri = () => typeof window !== 'undefined' && window.__TAURI__ !== undefined
+
 // ─── NOTIFICATION SCHEDULE ───────────────────────────────────────────────────
 // All times in 24h. dow = 0 (Dom) – 6 (Sáb)
 
@@ -15,6 +18,15 @@ const DAILY_NOTIFICATIONS = [
 const TAROT_NOTIFICATION = { h: 19, m: 30, title: 'BLOQUE 3 🔮', body: 'Tarot App — sesión de build' }
 
 export async function requestNotificationPermission() {
+  if (isTauri()) {
+    try {
+      const { requestPermission } = await import('@tauri-apps/plugin-notification')
+      const result = await requestPermission()
+      return result === 'granted'
+    } catch {
+      // plugin not installed, fall through to web
+    }
+  }
   if (!('Notification' in window)) return false
   if (Notification.permission === 'granted') return true
   const result = await Notification.requestPermission()
@@ -50,7 +62,16 @@ export function scheduleNotificationsForToday() {
   })
 }
 
-export function sendNotification(title, body) {
+export async function sendNotification(title, body) {
+  if (isTauri()) {
+    try {
+      const { sendNotification: tauriSend } = await import('@tauri-apps/plugin-notification')
+      tauriSend({ title, body })
+      return
+    } catch {
+      // plugin not installed, fall through to web
+    }
+  }
   if (!('Notification' in window)) return
   if (Notification.permission !== 'granted') return
   new Notification(title, {

@@ -27,11 +27,13 @@ const useStore = create(
     (set, get) => ({
       // ─── PERSISTENT STATE ───────────────────────────────────────
       user: {
-        onboarded: false,
-        gymDays: 5,
-        sleepConfirm: 0,
-        social: [],
-        startEnergy: 7,
+        onboarded: true,
+        gymDays: 4,
+        gymSchedule: [1, 2, 4, 5],
+        sleepStart: '00:00',
+        sleepEnd: '08:00',
+        social: [1, 2],
+        name: 'Gibran',
         notificationsEnabled: false,
         notificationPermission: null, // null | 'granted' | 'denied'
       },

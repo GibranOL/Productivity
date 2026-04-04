@@ -1,0 +1,29 @@
+{
+  "productName": "Gibran OS",
+  "version": "1.0.0",
+  "identifier": "com.gibran.os",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Gibran OS",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 375,
+        "minHeight": 667,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": ["icons/icon.png"]
+  }
+}

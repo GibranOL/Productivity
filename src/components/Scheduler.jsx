@@ -3,6 +3,8 @@ import useSchedulerStore, { SECTIONS } from '../store/schedulerStore'
 import BlockCard from './BlockCard'
 import BlockEditor from './BlockEditor'
 import CalendarSync from './CalendarSync'
+import PostBlockModal from './PostBlockModal'
+import { getBreakBlocks, validateSchedule } from '../utils/breakRules'
 import { Btn, SectionTitle } from './UI'
 
 const DAY_LABELS  = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
@@ -15,6 +17,8 @@ export default function Scheduler() {
   const blocks       = useSchedulerStore((s) => s.blocks)
   const generateWeek = useSchedulerStore((s) => s.generateWeek)
   const moveBlock    = useSchedulerStore((s) => s.moveBlock)
+  const lastCompletedBlock = useSchedulerStore((s) => s.lastCompletedBlock)
+  const clearLastCompletedBlock = useSchedulerStore((s) => s.clearLastCompletedBlock)
 
   const [editorBlock, setEditorBlock] = useState(null) // null = closed, {} = new, {id,...} = edit
   const [editorOpen, setEditorOpen]   = useState(false)
@@ -72,6 +76,18 @@ export default function Scheduler() {
       .sort((a, b) => a.startTime.localeCompare(b.startTime))
   }
 
+  // Compute breaks and warnings
+  const breakBlocks = getBreakBlocks(blocks)
+  const warnings = validateSchedule(blocks)
+  const hasErrors = warnings.some((w) => w.severity === 'error')
+  const hasWarnings = warnings.some((w) => w.severity === 'warning')
+
+  function blocksAndBreaksForDay(day) {
+    const dayBlocks = blocksForDay(day)
+    const dayBreaks = breakBlocks.filter((b) => b.day === day)
+    return [...dayBlocks, ...dayBreaks].sort((a, b) => a.startTime.localeCompare(b.startTime))
+  }
+
   // ── EMPTY STATE ───────────────────────────────────────────────────────────
   if (!generated && blocks.length === 0) {
     return (
@@ -116,6 +132,31 @@ export default function Scheduler() {
         <CalendarSync />
       </div>
 
+      {/* ── WARNINGS ── */}
+      {(hasErrors || hasWarnings) && (
+        <div style={{
+          marginBottom: 12,
+          padding: '10px 14px',
+          background: hasErrors ? 'var(--red-dim)' : 'var(--yellow-dim)',
+          border: `1px solid ${hasErrors ? 'var(--red-mid)' : 'var(--yellow-mid)'}`,
+          borderRadius: 10,
+          display: 'flex', alignItems: 'flex-start', gap: 10,
+        }}>
+          <span>{hasErrors ? '🚨' : '⚠️'}</span>
+          <div>
+            {warnings.map((w, i) => (
+              <div key={i} style={{
+                fontSize: 12,
+                color: w.severity === 'error' ? 'var(--red)' : 'var(--yellow)',
+                marginBottom: i < warnings.length - 1 ? 4 : 0,
+              }}>
+                {w.message}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── LEGEND ── */}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
         {Object.entries(SECTIONS).map(([key, s]) => (
@@ -138,7 +179,7 @@ export default function Scheduler() {
         {DAY_LABELS.map((label, day) => {
           const isToday  = day === todaySD
           const isDragOver = dragOverDay === day
-          const dayBlocks = blocksForDay(day)
+          const dayBlocks = blocksAndBreaksForDay(day)
 
           return (
             <div
@@ -212,14 +253,32 @@ export default function Scheduler() {
                   Suelta aquí
                 </div>
               ) : (
-                dayBlocks.map((block) => (
-                  <BlockCard
-                    key={block.id}
-                    block={block}
-                    onEdit={openEdit}
-                    compact
-                  />
-                ))
+                dayBlocks.map((block) =>
+                  block.isBreak ? (
+                    <div
+                      key={block.id}
+                      style={{
+                        padding: '4px 8px',
+                        borderRadius: 6,
+                        background: 'var(--bg4)',
+                        border: '1px dashed var(--border)',
+                        opacity: 0.5,
+                        fontSize: 9,
+                        color: 'var(--text-dim)',
+                        fontFamily: 'var(--mono)',
+                      }}
+                    >
+                      {block.icon} {block.startTime}–{block.endTime} {block.duration}min
+                    </div>
+                  ) : (
+                    <BlockCard
+                      key={block.id}
+                      block={block}
+                      onEdit={openEdit}
+                      compact
+                    />
+                  )
+                )
               )}
 
               {/* Drop hint when dragging */}
@@ -248,9 +307,25 @@ export default function Scheduler() {
         <div style={{ marginTop: 20 }}>
           <SectionTitle>HOY — {DAY_FULL[todaySD]}</SectionTitle>
           <div className="stack" style={{ gap: 8 }}>
-            {blocksForDay(todaySD).map((block) => (
-              <BlockCard key={block.id} block={block} onEdit={openEdit} compact={false} />
-            ))}
+            {blocksAndBreaksForDay(todaySD).map((block) =>
+              block.isBreak ? (
+                <div key={block.id} style={{
+                  padding: '8px 14px',
+                  borderRadius: 10,
+                  background: 'var(--bg2)',
+                  border: '1px dashed var(--border-mid)',
+                  opacity: 0.6,
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  fontSize: 12, color: 'var(--text-dim)',
+                }}>
+                  <span>{block.icon}</span>
+                  <span>{block.startTime}–{block.endTime}</span>
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: 10 }}>{block.duration} min</span>
+                </div>
+              ) : (
+                <BlockCard key={block.id} block={block} onEdit={openEdit} compact={false} />
+              )
+            )}
           </div>
         </div>
       )}
@@ -261,6 +336,15 @@ export default function Scheduler() {
       {/* ── BLOCK EDITOR ── */}
       {editorOpen && (
         <BlockEditor block={editorBlock} onClose={closeEditor} />
+      )}
+
+      {/* ── POST BLOCK MODAL ── */}
+      {lastCompletedBlock && (
+        <PostBlockModal
+          block={lastCompletedBlock}
+          onClose={clearLastCompletedBlock}
+          onSave={clearLastCompletedBlock}
+        />
       )}
     </div>
   )

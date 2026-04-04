@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import useStore from '../store/index'
 import useSchedulerStore from '../store/schedulerStore'
-import { checkOllamaStatus, chat, buildSystemPrompt } from '../services/ollamaService'
+import useAIMemoryStore from '../store/aiMemoryStore'
+import { checkOllamaStatus, chat, buildSystemPromptWithMemory, buildSystemPrompt } from '../services/ollamaService'
 import { getTodayDow } from '../utils/date'
 
 // ─── QUICK ACTIONS ────────────────────────────────────────────────────────────
@@ -13,7 +14,7 @@ const QUICK_ACTIONS = [
   { label: 'Plan de mañana',     prompt: 'Ayúdame a planear el día de mañana basándote en lo que no terminé hoy y mis objetivos de semana.' },
 ]
 
-const MODEL_OPTIONS = ['llama3.2:3b', 'llama3.1:8b', 'llama3.2:1b', 'mistral', 'phi3']
+const MODEL_OPTIONS = ['gemma4:e4b', 'llama3.2:3b', 'llama3.1:8b', 'llama3.2:1b', 'mistral', 'phi3']
 
 // ─── MESSAGE BUBBLE ───────────────────────────────────────────────────────────
 function Bubble({ msg }) {
@@ -144,8 +145,9 @@ export default function AIAssistant({ onClose }) {
   const [streaming,    setStreaming]     = useState(false)
   const [ollamaStatus, setOllamaStatus] = useState('checking') // checking|online|offline
   const [availModels,  setAvailModels]  = useState([])
-  const [selectedModel, setSelectedModel] = useState('llama3.2:3b')
+  const [selectedModel, setSelectedModel] = useState('gemma4:e4b')
   const [showModelPicker, setShowModelPicker] = useState(false)
+  const [thinkMode, setThinkMode] = useState(false)
 
   const abortRef   = useRef(null)
   const bottomRef  = useRef(null)
@@ -158,6 +160,7 @@ export default function AIAssistant({ onClose }) {
   const getTodayLog = useStore((s) => s.getTodayLog)
   const getWeekStats = useStore((s) => s.getWeekStats)
   const blocks   = useSchedulerStore((s) => s.blocks)
+  const memoryStore = useAIMemoryStore()
 
   // ── AUTO SCROLL ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -217,7 +220,8 @@ export default function AIAssistant({ onClose }) {
     setStreaming(true)
 
     // Build full messages list with system prompt
-    const systemPrompt = buildSystemPrompt(buildContext())
+    const memoryCtx = memoryStore.generateContextString()
+    const systemPrompt = buildSystemPromptWithMemory(memoryCtx, buildContext())
     const apiMessages  = [
       { role: 'system', content: systemPrompt },
       ...history.map(({ role, content }) => ({ role, content })).filter((m) => m.role !== 'error'),
@@ -232,7 +236,7 @@ export default function AIAssistant({ onClose }) {
 
     try {
       let full = ''
-      for await (const chunk of chat(apiMessages, selectedModel, ctrl.signal)) {
+      for await (const chunk of chat(apiMessages, selectedModel, ctrl.signal, thinkMode)) {
         full += chunk
         setMessages((prev) =>
           prev.map((m) => (m.id === streamId ? { ...m, content: full } : m))
@@ -328,21 +332,45 @@ export default function AIAssistant({ onClose }) {
               </div>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              width: 30, height: 30,
-              borderRadius: '50%',
-              border: '1px solid var(--border-mid)',
-              background: 'var(--bg3)',
-              color: 'var(--text-mid)',
-              cursor: 'pointer',
-              fontSize: 16,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            ×
-          </button>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <button
+              onClick={() => setThinkMode(false)}
+              title="Rápido: 2-5s"
+              style={{
+                padding: '4px 10px', borderRadius: 12, fontSize: 11,
+                background: !thinkMode ? 'var(--teal-dim)' : 'var(--bg3)',
+                border: `1px solid ${!thinkMode ? 'var(--teal-mid)' : 'var(--border-mid)'}`,
+                color: !thinkMode ? 'var(--teal)' : 'var(--text-dim)',
+                cursor: 'pointer',
+              }}
+            >⚡ Rápido</button>
+            <button
+              onClick={() => setThinkMode(true)}
+              title="Profundo: 30-60s (para código)"
+              style={{
+                padding: '4px 10px', borderRadius: 12, fontSize: 11,
+                background: thinkMode ? 'var(--purple-dim)' : 'var(--bg3)',
+                border: `1px solid ${thinkMode ? 'var(--purple-mid)' : 'var(--border-mid)'}`,
+                color: thinkMode ? 'var(--purple)' : 'var(--text-dim)',
+                cursor: 'pointer',
+              }}
+            >🧠 Profundo</button>
+            <button
+              onClick={onClose}
+              style={{
+                width: 30, height: 30,
+                borderRadius: '50%',
+                border: '1px solid var(--border-mid)',
+                background: 'var(--bg3)',
+                color: 'var(--text-mid)',
+                cursor: 'pointer',
+                fontSize: 16,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {/* Model picker dropdown */}

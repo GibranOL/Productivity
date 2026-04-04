@@ -2,19 +2,22 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const isTauri = process.env.TAURI_ENV_PLATFORM !== undefined
+
 export default defineConfig({
-  base: '/gibran-os/',
-  test: {
-    globals: true,
-    environment: 'node',
-    include: ['src/**/*.test.{js,jsx}'],
+  base: isTauri ? '/' : '/gibran-os/',
+  clearScreen: false,
+  server: {
+    port: 5173,
+    strictPort: true,
   },
+  envPrefix: ['VITE_', 'TAURI_'],
   optimizeDeps: {
     include: ['pdfjs-dist'],
   },
   plugins: [
     react(),
-    VitePWA({
+    !isTauri && VitePWA({
       registerType: 'autoUpdate',
       manifest: {
         name: 'Gibran OS',
@@ -30,7 +33,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,mjs}'],
         runtimeCaching: [{
           urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
           handler: 'CacheFirst',
@@ -40,6 +43,19 @@ export default defineConfig({
           }
         }]
       }
-    })
-  ]
+    }),
+  ].filter(Boolean),
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['src/**/*.test.{js,jsx}'],
+  },
+  build: {
+    target: isTauri ? ['es2021', 'chrome100', 'safari13'] : 'modules',
+    minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
+    sourcemap: !!process.env.TAURI_DEBUG,
+    rollupOptions: {
+      external: isTauri ? [] : ['@tauri-apps/plugin-notification'],
+    },
+  },
 })

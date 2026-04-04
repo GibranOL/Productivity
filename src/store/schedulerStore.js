@@ -155,6 +155,7 @@ const useSchedulerStore = create(
       blocks: [],
       currentWeekOffset: 0,
       activeBlockId: null,
+      lastCompletedBlock: null,
       syncStatus: 'idle',          // 'idle' | 'syncing' | 'synced' | 'error'
       lastSyncedAt: null,          // timestamp
       syncError: null,
@@ -221,6 +222,12 @@ const useSchedulerStore = create(
         set({ blocks: defaultBlocks })
       },
 
+      initWeekIfEmpty: () => {
+        if (get().blocks.length === 0) {
+          set({ blocks: generateDefaultWeek() })
+        }
+      },
+
       // ── TIMER ACTIONS ─────────────────────────────────────────────
       startBlock: (id) => {
         const now = Date.now()
@@ -245,6 +252,9 @@ const useSchedulerStore = create(
           : block.duration
         set((s) => ({
           activeBlockId: s.activeBlockId === id ? null : s.activeBlockId,
+          lastCompletedBlock: block.section === 'project' && block.projectId
+            ? { ...block, actualDuration: actual }
+            : null,
           blocks: s.blocks.map((b) =>
             b.id === id
               ? { ...b, status: 'done', actualDuration: actual }
@@ -252,6 +262,8 @@ const useSchedulerStore = create(
           ),
         }))
       },
+
+      clearLastCompletedBlock: () => set({ lastCompletedBlock: null }),
 
       extendBlock: (id, extraMinutes) => {
         set((s) => ({

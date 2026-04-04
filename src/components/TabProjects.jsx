@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import useStore from '../store/index'
+import useProjectStore from '../store/projectStore'
 import { Card, Btn, Input, ProgressBar, Badge, ModalOverlay, SectionTitle, Divider } from './UI'
+import ProjectDetail from './ProjectDetail'
 
 const STATUS_CONFIG = {
   aplicado:     { label: 'Aplicado',     color: 'teal' },
@@ -13,12 +15,26 @@ const STATUS_CONFIG = {
 export default function TabProjects() {
   const modal = useStore((s) => s.modal)
   const openModal = useStore((s) => s.openModal)
+  const [detailProject, setDetailProject] = useState(null)
+
+  if (detailProject) {
+    return (
+      <div style={{ paddingBottom: 80 }}>
+        <ProjectDetail
+          projectId={detailProject.id}
+          projectName={detailProject.name}
+          projectIcon={detailProject.icon}
+          onBack={() => setDetailProject(null)}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="stack" style={{ gap: 16, paddingBottom: 80 }}>
-      <TrueNorthCard />
+      <TrueNorthCard onDetail={() => setDetailProject({ id: 'truenorth', name: 'TrueNorth Pathways', icon: '🧭' })} />
       <JobSearchCard />
-      <TarotCard />
+      <TarotCard onDetail={() => setDetailProject({ id: 'tarot', name: 'Tarot App', icon: '🔮' })} />
 
       {modal === 'addJob'     && <AddJobAppModal />}
       {modal === 'addFeature' && <AddFeatureModal />}
@@ -27,8 +43,10 @@ export default function TabProjects() {
 }
 
 // ─── TRUENORTH ────────────────────────────────────────────────────────────────
-function TrueNorthCard() {
+function TrueNorthCard({ onDetail }) {
   const project    = useStore((s) => s.projects.truenorth)
+  const getTasksForProject = useProjectStore((s) => s.getTasksForProject)
+  const nextTask = getTasksForProject('truenorth').find((t) => t.status === 'todo')
   const setProject = useStore((s) => s.setProject)
   const [editing, setEditing] = useState(false)
   const [form, setForm]       = useState({})
@@ -58,9 +76,12 @@ function TrueNorthCard() {
             <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>Lun / Mié — Bloques 1 & 2</div>
           </div>
         </div>
-        <Btn variant="ghost" size="sm" onClick={editing ? save : startEdit}>
-          {editing ? 'Guardar' : 'Editar'}
-        </Btn>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <Btn variant="ghost" size="sm" onClick={editing ? save : startEdit}>
+            {editing ? 'Guardar' : 'Editar'}
+          </Btn>
+          <Btn variant="primary" size="sm" onClick={onDetail}>Ver →</Btn>
+        </div>
       </div>
 
       {!editing ? (
@@ -76,6 +97,12 @@ function TrueNorthCard() {
             {project.deadline && <Badge color="teal">📅 {project.deadline}</Badge>}
             {project.blocker  && <Badge color="red">🚫 {project.blocker}</Badge>}
           </div>
+          {nextTask && (
+            <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-dim)' }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.1em' }}>PRÓX. TAREA: </span>
+              {nextTask.title}
+            </div>
+          )}
           {project.lastNote && (
             <div style={{ marginTop: 12, background: 'var(--bg3)', borderRadius: 8, padding: '10px 12px' }}>
               <div className="label" style={{ marginBottom: 4 }}>Última sesión</div>
@@ -197,7 +224,7 @@ function JobSearchCard() {
 }
 
 // ─── TAROT ────────────────────────────────────────────────────────────────────
-function TarotCard() {
+function TarotCard({ onDetail }) {
   const project        = useStore((s) => s.projects.tarot)
   const setProject     = useStore((s) => s.setProject)
   const toggleTarot    = useStore((s) => s.toggleTarotFeature)
@@ -238,6 +265,7 @@ function TarotCard() {
           <Btn variant="ghost" size="sm" onClick={() => { setMeta({ pct: String(project.pct), hoursTotal: String(project.hoursTotal), mvpDate: project.mvpDate }); setEditMeta(true) }}>
             Editar
           </Btn>
+          <Btn variant="ghost" size="sm" onClick={onDetail}>Ver →</Btn>
           <Btn variant="primary" size="sm" onClick={() => openModal('addFeature')}>+ Feature</Btn>
         </div>
       </div>
