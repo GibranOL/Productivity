@@ -1,0 +1,378 @@
+/* ─── FullCalendar Dark Theme — Gibran OS ─────────────────────── */
+
+/* Base structure */
+.fc {
+  --fc-border-color: var(--border-mid);
+  --fc-bg-color: var(--bg);
+  --fc-neutral-bg-color: var(--bg2);
+  --fc-list-event-hover-bg-color: var(--bg3);
+  --fc-today-bg-color: rgba(0, 212, 170, 0.04);
+  --fc-highlight-color: rgba(0, 212, 170, 0.08);
+  --fc-non-business-color: rgba(0, 0, 0, 0.15);
+  --fc-now-indicator-color: var(--teal);
+  --fc-page-bg-color: var(--bg);
+  font-family: var(--sans);
+  color: var(--text);
+}
+
+/* ─── Toolbar ─────────────────────────────────────────────────── */
+
+.fc .fc-toolbar {
+  padding: 12px 4px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fc .fc-toolbar-title {
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+.fc .fc-button {
+  background: var(--bg3);
+  border: 1px solid var(--border-mid);
+  color: var(--text-mid);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.18s ease;
+}
+
+.fc .fc-button:hover {
+  background: var(--bg4);
+  color: var(--text);
+  border-color: var(--border-bright);
+}
+
+.fc .fc-button-active,
+.fc .fc-button:active {
+  background: var(--teal-dim) !important;
+  color: var(--teal) !important;
+  border-color: var(--teal-glow) !important;
+}
+
+.fc .fc-button:disabled {
+  opacity: 0.4;
+}
+
+.fc .fc-button-group > .fc-button {
+  border-radius: 0;
+}
+
+.fc .fc-button-group > .fc-button:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.fc .fc-button-group > .fc-button:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+/* ─── Column Headers ──────────────────────────────────────────── */
+
+.fc .fc-col-header-cell {
+  background: var(--bg2);
+  border-color: var(--border);
+  padding: 8px 0;
+}
+
+.fc .fc-col-header-cell-cushion {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-decoration: none;
+}
+
+.fc .fc-day-today .fc-col-header-cell-cushion {
+  color: var(--teal);
+}
+
+/* ─── Time Grid ───────────────────────────────────────────────── */
+
+.fc .fc-timegrid-slot {
+  height: 48px;
+  border-color: var(--border);
+}
+
+.fc .fc-timegrid-slot-label-cushion {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.fc .fc-timegrid-col {
+  border-color: var(--border);
+}
+
+.fc .fc-timegrid-now-indicator-line {
+  border-color: var(--teal);
+  border-width: 2px;
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+  border-color: var(--teal);
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+/* ─── Events ──────────────────────────────────────────────────── */
+
+.fc .fc-event {
+  border: none;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  overflow: hidden;
+}
+
+.fc .fc-event:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  z-index: 10 !important;
+}
+
+.fc .fc-timegrid-event {
+  border-radius: 8px;
+  border-left: 3px solid;
+  min-height: 24px;
+}
+
+.fc .fc-timegrid-event .fc-event-main {
+  padding: 4px 6px;
+  overflow: hidden;
+}
+
+.fc .fc-event-title {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.fc .fc-event-time {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  opacity: 0.7;
+  letter-spacing: 0.5px;
+}
+
+/* Event done state */
+.fc .fc-event.event-done {
+  opacity: 0.5;
+}
+
+.fc .fc-event.event-done .fc-event-title {
+  text-decoration: line-through;
+}
+
+/* Event active state */
+.fc .fc-event.event-active {
+  animation: pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(0, 212, 170, 0.3);
+}
+
+/* Event skipped state */
+.fc .fc-event.event-skipped {
+  opacity: 0.3;
+}
+
+/* ─── Event Type Colors ───────────────────────────────────────── */
+
+.fc .fc-event.event-type-project_block {
+  background: var(--teal-dim);
+  border-left-color: var(--teal);
+  color: var(--teal);
+}
+
+.fc .fc-event.event-type-gym {
+  background: var(--orange-dim);
+  border-left-color: var(--orange);
+  color: var(--orange);
+}
+
+.fc .fc-event.event-type-meal {
+  background: var(--green-dim);
+  border-left-color: var(--green);
+  color: var(--green);
+}
+
+.fc .fc-event.event-type-meditation {
+  background: var(--purple-dim);
+  border-left-color: var(--purple);
+  color: var(--purple);
+}
+
+.fc .fc-event.event-type-sleep {
+  background: var(--indigo-dim);
+  border-left-color: var(--indigo);
+  color: var(--indigo);
+}
+
+.fc .fc-event.event-type-relax {
+  background: var(--pink-dim);
+  border-left-color: var(--pink);
+  color: var(--pink);
+}
+
+.fc .fc-event.event-type-medication {
+  background: var(--red-dim);
+  border-left-color: var(--red);
+  color: var(--red);
+}
+
+.fc .fc-event.event-type-custom {
+  background: var(--yellow-dim);
+  border-left-color: var(--yellow);
+  color: var(--yellow);
+}
+
+/* ─── List View (Mobile Agenda) ───────────────────────────────── */
+
+.fc .fc-list {
+  border-color: var(--border-mid);
+}
+
+.fc .fc-list-day-cushion {
+  background: var(--bg2);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text);
+  padding: 10px 14px;
+}
+
+.fc .fc-list-day.fc-day-today .fc-list-day-cushion {
+  background: var(--teal-dim);
+  color: var(--teal);
+}
+
+.fc .fc-list-event {
+  cursor: pointer;
+}
+
+.fc .fc-list-event td {
+  border-color: var(--border);
+  padding: 10px 14px;
+}
+
+.fc .fc-list-event:hover td {
+  background: var(--bg3);
+}
+
+.fc .fc-list-event-time {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.fc .fc-list-event-title {
+  font-family: var(--sans);
+  font-weight: 500;
+}
+
+.fc .fc-list-event-dot {
+  border-radius: 50%;
+}
+
+.fc .fc-list-empty-cushion {
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+
+/* ─── Day Grid (Month view) ───────────────────────────────────── */
+
+.fc .fc-daygrid-day {
+  border-color: var(--border);
+}
+
+.fc .fc-daygrid-day-number {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  padding: 6px 8px;
+  text-decoration: none;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number {
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.fc .fc-daygrid-more-link {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--teal);
+}
+
+/* ─── Drag & Drop ─────────────────────────────────────────────── */
+
+.fc .fc-event-dragging {
+  opacity: 0.7;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.fc .fc-event-resizing {
+  opacity: 0.8;
+}
+
+.fc .fc-highlight {
+  background: var(--teal-dim);
+  border-radius: 4px;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────── */
+
+.fc .fc-scroller::-webkit-scrollbar {
+  width: 6px;
+}
+
+.fc .fc-scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fc .fc-scroller::-webkit-scrollbar-thumb {
+  background: var(--border-bright);
+  border-radius: 3px;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .fc .fc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .fc .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+  }
+
+  .fc .fc-button {
+    font-size: 0.6rem;
+    padding: 5px 8px;
+  }
+
+  .fc .fc-timegrid-slot {
+    height: 40px;
+  }
+}
