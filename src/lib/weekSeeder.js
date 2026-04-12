@@ -33,16 +33,17 @@ function localToUTC(baseDate, hours, minutes = 0) {
 }
 
 /**
- * Generate a full week of events starting from Monday of current week.
+ * Generate events for multiple weeks starting from Monday of current week.
  * @param {string} userId - Appwrite user ID
+ * @param {number} weeks - number of weeks to generate (default 4)
  * @returns {Array} array of event objects ready for calendarEventStore.addEvent()
  */
-export function generateWeekEvents(userId) {
+export function generateWeekEvents(userId, weeks = 4) {
   const now = new Date()
   const monday = startOfWeek(now, { weekStartsOn: 1 })
   const events = []
 
-  for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+  for (let dayOffset = 0; dayOffset < 7 * weeks; dayOffset++) {
     const date = addDays(monday, dayOffset)
     const dow = date.getDay() // 0=Sun, 1=Mon...
     const dayLabel = format(date, 'EEEE')

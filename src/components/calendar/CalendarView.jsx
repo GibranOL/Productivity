@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -31,8 +31,8 @@ export default function CalendarView() {
 
   const [popupEvent, setPopupEvent] = useState(null)
 
-  // Convert store events to FullCalendar format
-  const fcEvents = events.map(toFullCalendarEvent)
+  // Convert store events to FullCalendar format — memoized to prevent infinite re-renders
+  const fcEvents = useMemo(() => events.map(toFullCalendarEvent), [events])
 
   // Drag & drop handler
   const handleEventDrop = useCallback((info) => {
@@ -149,7 +149,7 @@ export default function CalendarView() {
         dayMaxEvents={true}
         weekends={true}
         firstDay={1}
-        height="100%"
+        height="calc(100vh - 120px)"
         stickyHeaderDates={true}
         eventMaxStack={3}
         scrollTime="08:00:00"
