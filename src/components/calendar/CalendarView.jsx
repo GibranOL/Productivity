@@ -4,6 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
+import luxonPlugin from '@fullcalendar/luxon3'
 import useCalendarEventStore from '../../store/calendarEventStore'
 import useUIStore from '../../store/uiStore'
 import { toFullCalendarEvent, fromFullCalendarDrop } from '../../lib/calendarAdapter'
@@ -118,7 +119,7 @@ export default function CalendarView() {
     <div style={{ flex: 1, position: 'relative', zIndex: 1 }}>
       <FullCalendar
         ref={calendarRef}
-        plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
+        plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin, luxonPlugin]}
         initialView={isMobile ? 'listWeek' : 'timeGridWeek'}
         headerToolbar={{
           left: 'prev,next today',
@@ -142,7 +143,7 @@ export default function CalendarView() {
         nowIndicator={true}
         allDaySlot={false}
         slotMinTime="06:00:00"
-        slotMaxTime="01:00:00"
+        slotMaxTime="25:00:00"
         slotDuration="00:30:00"
         slotLabelInterval="01:00:00"
         expandRows={true}
