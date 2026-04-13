@@ -3,6 +3,7 @@ import useCortanaStore from '../../store/cortanaStore'
 import useStore from '../../store/index'
 import useSchedulerStore from '../../store/schedulerStore'
 import useAIMemoryStore from '../../store/aiMemoryStore'
+import useJobStore from '../../store/jobStore'
 import { checkOllamaStatus, chat, buildSystemPromptWithMemory } from '../../services/ollamaService'
 import { getTodayDow } from '../../utils/date'
 
@@ -11,7 +12,7 @@ const QUICK_ACTIONS = [
   { label: '¿Qué hago?',       icon: '⚡', prompt: 'Basándote en mi schedule de hoy, energía actual y hábitos completados, ¿qué debería hacer en este momento? Sé directo.' },
   { label: 'Mi semana',         icon: '📊', prompt: 'Revisa mis métricas de esta semana y dime qué está funcionando, qué no, y qué ajustar.' },
   { label: 'Anti-burnout',      icon: '🔥', prompt: '¿Hay señales de que me esté quemando? Revisa mis horas, hábitos y patrones de esta semana.' },
-  { label: 'Plan de mañana',    icon: '📋', prompt: 'Ayúdame a planear el día de mañana basándote en lo que no terminé hoy y mis objetivos.' },
+  { label: 'Job Pipeline',      icon: '💼', prompt: 'Revisa mi pipeline de job search. ¿Hay vacantes estancadas? ¿Qué debería priorizar esta semana para avanzar hacia una oferta? Sé directo y estratégico.' },
 ]
 
 // ─── Status Indicator ────────────────────────────────────────────────────────
@@ -87,6 +88,8 @@ export default function CortanaSidebar({ onClose }) {
   const getWeekStats = useStore((s) => s.getWeekStats)
   const blocks     = useSchedulerStore((s) => s.blocks)
   const memoryStore = useAIMemoryStore()
+  const jobPipeline = useJobStore((s) => s.getPipelineCounts)
+  const jobStaleCheck = useJobStore((s) => s.jobs)
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -122,6 +125,16 @@ export default function CortanaSidebar({ onClose }) {
     const todaySD   = [6, 0, 1, 2, 3, 4, 5][dow]
     const todayBlocks = (blocks || []).filter((b) => b.day === todaySD)
 
+    // Job pipeline summary
+    const pipelineCounts = jobPipeline()
+    const staleJobs = jobStaleCheck
+      .filter((j) => j.status === 'applied')
+      .filter((j) => {
+        const last = j.statusHistory?.[j.statusHistory.length - 1]
+        if (!last) return false
+        return (Date.now() - new Date(last.date).getTime()) / (1000*60*60*24) >= 10
+      })
+
     return {
       dow, hour,
       todayBlocks,
@@ -137,6 +150,8 @@ export default function CortanaSidebar({ onClose }) {
         Object.entries(projects).map(([k, v]) => [k, { pct: v.pct }])
       ),
       streak: streak?.count ?? 0,
+      jobPipeline: pipelineCounts,
+      staleJobs: staleJobs.map((j) => j.company),
     }
   }
 

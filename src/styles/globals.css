@@ -416,3 +416,41 @@ textarea.input { resize: vertical; min-height: 80px; }
 /* ── SAFE AREA ── */
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 .safe-top    { padding-top: env(safe-area-inset-top); }
+
+/* ── KANBAN ── */
+.kanban-dragging {
+  opacity: 0.4 !important;
+  transform: rotate(2deg);
+}
+
+.kanban-toast {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  background: var(--bg4);
+  border: 1px solid var(--red-mid);
+  border-radius: 12px;
+  padding: 10px 14px;
+  max-width: 360px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  cursor: pointer;
+  animation: slideDown 0.22s ease;
+}
+
+/* Kanban mobile: stack columns vertically */
+@media (max-width: 700px) {
+  .kanban-board-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .job-pipeline-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .job-pipeline-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

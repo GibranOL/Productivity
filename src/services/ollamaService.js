@@ -122,6 +122,7 @@ export function buildSystemPrompt(context) {
   const {
     dow, hour, todayBlocks = [], habits = {}, energy = 5,
     weekStats = {}, projects = {}, streak = 0,
+    jobPipeline = {}, staleJobs = [],
   } = context
 
   const DAY_NAMES  = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
@@ -167,6 +168,10 @@ ${projectLines || '(sin datos)'}
 
 ## SEMANA
 ${weekStats.workHours?.toFixed(1) ?? 0}h trabajo, ${weekStats.gym ?? 0} gym, ${weekStats.meditation ?? 0} meditación
+
+## JOB SEARCH PIPELINE
+${jobPipeline.total ? `Total: ${jobPipeline.total} | Activas: ${jobPipeline.active} | Wishlist: ${jobPipeline.wishlist || 0} | Applied: ${jobPipeline.applied || 0} | Screening: ${jobPipeline.screening || 0} | Technical: ${jobPipeline.technical || 0} | Final: ${jobPipeline.final_interview || 0} | Offers: ${jobPipeline.offer || 0}` : '(sin vacantes registradas)'}
+${staleJobs.length > 0 ? `⚠️ STALE (10+ días sin respuesta): ${staleJobs.join(', ')}` : ''}
 
 ## REGLAS
 - Máx 3 bloques de 90 min/día. Gym L/M/Mi/V/S. Sueño 12AM–8AM sagrado.

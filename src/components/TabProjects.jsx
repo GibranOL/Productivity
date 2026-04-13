@@ -1,8 +1,15 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import useStore from '../store/index'
 import useProjectStore from '../store/projectStore'
+import useJobStore from '../store/jobStore'
+import useCortanaStore from '../store/cortanaStore'
 import { Card, Btn, Input, ProgressBar, Badge, ModalOverlay, SectionTitle, Divider } from './UI'
 import ProjectDetail from './ProjectDetail'
+import KanbanBoard from './projects/KanbanBoard'
+import JobPipeline from './jobs/JobPipeline'
+import { AddJobModal, EditJobModal } from './jobs/AddJobModal'
+import { buildJDAnalysisPrompt, parseMatchScore } from '../lib/jdAnalyzer'
+import { chat, buildSystemPromptWithMemory } from '../services/ollamaService'
 
 const STATUS_CONFIG = {
   aplicado:     { label: 'Aplicado',     color: 'teal' },
@@ -12,10 +19,71 @@ const STATUS_CONFIG = {
   rechazado:    { label: 'Rechazado',    color: 'red' },
 }
 
+const PROJECT_FILTERS = [
+  { id: 'all',       label: 'Todos',       icon: '📁' },
+  { id: 'truenorth', label: 'TrueNorth',   icon: '🧭' },
+  { id: 'jobsearch', label: 'Job Search',  icon: '💼' },
+  { id: 'tarot',     label: 'Tarot App',   icon: '🔮' },
+]
+
+const VIEW_TABS = [
+  { id: 'kanban',   label: 'KANBAN' },
+  { id: 'pipeline', label: 'JOB PIPELINE' },
+  { id: 'cards',    label: 'CARDS' },
+]
+
 export default function TabProjects() {
   const modal = useStore((s) => s.modal)
   const openModal = useStore((s) => s.openModal)
+  const closeModal = useStore((s) => s.closeModal)
+  const updateJob = useJobStore((s) => s.updateJob)
   const [detailProject, setDetailProject] = useState(null)
+  const [view, setView] = useState('kanban')
+  const [projectFilter, setProjectFilter] = useState('all')
+  const [showAddJob, setShowAddJob] = useState(false)
+  const [editingJob, setEditingJob] = useState(null)
+  const [analyzingJob, setAnalyzingJob] = useState(null) // job being analyzed
+  const [analyzing, setAnalyzing] = useState(false)
+
+  // JD Analysis via Cortana (Ollama)
+  const handleAnalyzeJD = useCallback(async (job) => {
+    if (!job.jdText || analyzing) return
+    setAnalyzingJob(job)
+    setAnalyzing(true)
+
+    const prompt = buildJDAnalysisPrompt(job.jdText, job.company, job.role)
+    const cortanaState = useCortanaStore.getState()
+    const model = cortanaState.selectedModel
+
+    try {
+      let fullResponse = ''
+      const messages = [
+        { role: 'system', content: 'Eres Cortana, asistente de job search de Gibran. Responde en español, sé directa y honesta.' },
+        { role: 'user', content: prompt },
+      ]
+
+      for await (const chunk of chat(messages, model)) {
+        fullResponse += chunk
+      }
+
+      // Parse match score from response
+      const matchScore = parseMatchScore(fullResponse)
+
+      // Update job with analysis results
+      updateJob(job.id, {
+        matchScore,
+        matchAnalysis: fullResponse,
+      })
+    } catch (err) {
+      // If Ollama is offline, show error in analysis field
+      updateJob(job.id, {
+        matchAnalysis: `Error: ${err.message || 'No se pudo conectar a Cortana. Verifica que Ollama esté corriendo.'}`,
+      })
+    } finally {
+      setAnalyzing(false)
+      setAnalyzingJob(null)
+    }
+  }, [analyzing, updateJob])
 
   if (detailProject) {
     return (
@@ -32,9 +100,102 @@ export default function TabProjects() {
 
   return (
     <div className="stack" style={{ gap: 16, paddingBottom: 80 }}>
-      <TrueNorthCard onDetail={() => setDetailProject({ id: 'truenorth', name: 'TrueNorth Pathways', icon: '🧭' })} />
-      <JobSearchCard />
-      <TarotCard onDetail={() => setDetailProject({ id: 'tarot', name: 'Tarot App', icon: '🔮' })} />
+      {/* View Toggle + Filters */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 4, background: 'var(--bg3)', borderRadius: 8, padding: 3 }}>
+          {VIEW_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setView(tab.id)}
+              style={{
+                padding: '5px 12px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
+                fontFamily: 'var(--mono)', letterSpacing: '0.1em', border: 'none',
+                background: view === tab.id ? 'var(--teal-dim)' : 'transparent',
+                color: view === tab.id ? 'var(--teal)' : 'var(--text-dim)',
+                transition: 'var(--transition)',
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Kanban project filter */}
+        {view === 'kanban' && (
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {PROJECT_FILTERS.map((pf) => (
+              <button
+                key={pf.id}
+                onClick={() => setProjectFilter(pf.id)}
+                style={{
+                  padding: '4px 10px', borderRadius: 6, fontSize: 10, cursor: 'pointer',
+                  fontFamily: 'var(--mono)', border: '1px solid',
+                  background: projectFilter === pf.id ? 'var(--bg4)' : 'transparent',
+                  borderColor: projectFilter === pf.id ? 'var(--border-bright)' : 'var(--border)',
+                  color: projectFilter === pf.id ? 'var(--text)' : 'var(--text-dim)',
+                  transition: 'var(--transition)',
+                }}
+              >
+                {pf.icon} {pf.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Pipeline add button */}
+        {view === 'pipeline' && (
+          <Btn variant="primary" size="sm" onClick={() => setShowAddJob(true)}>
+            + Vacante
+          </Btn>
+        )}
+      </div>
+
+      {/* Analyzing indicator */}
+      {analyzing && analyzingJob && (
+        <div style={{
+          background: 'var(--bg3)', border: '1px solid var(--teal-mid)', borderRadius: 10,
+          padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8,
+          animation: 'pulse 1.5s infinite',
+        }}>
+          <span style={{
+            width: 24, height: 24, borderRadius: 8,
+            background: 'linear-gradient(135deg, var(--teal-dim), var(--purple-dim))',
+            border: '1px solid var(--teal-glow)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'var(--display)', fontSize: 11, fontWeight: 800, color: 'var(--teal)',
+          }}>C</span>
+          <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>
+            Cortana analizando JD de <strong style={{ color: 'var(--teal)' }}>{analyzingJob.company}</strong>...
+          </span>
+        </div>
+      )}
+
+      {/* Kanban View */}
+      {view === 'kanban' && (
+        <KanbanBoard projectFilter={projectFilter} />
+      )}
+
+      {/* Pipeline View */}
+      {view === 'pipeline' && (
+        <JobPipeline
+          onAddJob={() => setShowAddJob(true)}
+          onEditJob={(job) => setEditingJob(job)}
+          onAnalyzeJD={handleAnalyzeJD}
+        />
+      )}
+
+      {/* Cards View (original) */}
+      {view === 'cards' && (
+        <>
+          <TrueNorthCard onDetail={() => setDetailProject({ id: 'truenorth', name: 'TrueNorth Pathways', icon: '🧭' })} />
+          <JobSearchCard />
+          <TarotCard onDetail={() => setDetailProject({ id: 'tarot', name: 'Tarot App', icon: '🔮' })} />
+        </>
+      )}
+
+      {/* Job modals */}
+      {showAddJob && <AddJobModal onClose={() => setShowAddJob(false)} />}
+      {editingJob && <EditJobModal job={editingJob} onClose={() => setEditingJob(null)} />}
 
       {modal === 'addJob'     && <AddJobAppModal />}
       {modal === 'addFeature' && <AddFeatureModal />}
