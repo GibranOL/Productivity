@@ -14,7 +14,7 @@ const QUICK_ACTIONS = [
   { label: 'Plan de mañana',     prompt: 'Ayúdame a planear el día de mañana basándote en lo que no terminé hoy y mis objetivos de semana.' },
 ]
 
-const MODEL_OPTIONS = ['gemma4:e4b', 'llama3.2:3b', 'llama3.1:8b', 'llama3.2:1b', 'mistral', 'phi3']
+const MODEL_OPTIONS = ['llama3.2:3b', 'llama3.1:8b', 'llama3.2:1b', 'mistral', 'phi3']
 
 // ─── MESSAGE BUBBLE ───────────────────────────────────────────────────────────
 function Bubble({ msg }) {
@@ -145,7 +145,7 @@ export default function AIAssistant({ onClose }) {
   const [streaming,    setStreaming]     = useState(false)
   const [ollamaStatus, setOllamaStatus] = useState('checking') // checking|online|offline
   const [availModels,  setAvailModels]  = useState([])
-  const [selectedModel, setSelectedModel] = useState('gemma4:e4b')
+  const [selectedModel, setSelectedModel] = useState('llama3.2:3b')
   const [showModelPicker, setShowModelPicker] = useState(false)
   const [thinkMode, setThinkMode] = useState(false)
 

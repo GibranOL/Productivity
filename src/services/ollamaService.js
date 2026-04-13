@@ -3,7 +3,7 @@
 // No auth required — Ollama is local-only by default
 
 const OLLAMA_BASE  = 'http://localhost:11434'
-const DEFAULT_MODEL = 'gemma4:e4b'
+const DEFAULT_MODEL = 'llama3.2:3b'
 const TIMEOUT_MS    = 30000
 
 // ─── STATUS ──────────────────────────────────────────────────────────────────
@@ -30,8 +30,8 @@ export async function getActiveModel() {
     const res = await fetch(`${OLLAMA_BASE}/api/tags`, { signal: ctrl.signal })
     if (!res.ok) return null
     const { models } = await res.json()
-    const hasGemma = (models || []).some((m) => m.name === 'gemma4:e4b')
-    if (hasGemma) return 'gemma4:e4b'
+    const hasDefault = (models || []).some((m) => m.name === DEFAULT_MODEL)
+    if (hasDefault) return DEFAULT_MODEL
     return null // no fallback silencioso
   } catch {
     return null
@@ -145,41 +145,30 @@ export function buildSystemPrompt(context) {
     .map(([k, p]) => `  • ${k}: ${p.pct ?? 0}% completado`)
     .join('\n')
 
-  return `Eres el asistente personal de Gibran, integrado en Gibran OS — su sistema operativo personal.
-Tu rol es ayudarle a gestionar su tiempo, energía y proyectos de forma honesta y directa.
-Responde siempre en español. Sé conciso (máx. 3-4 oraciones salvo que pidan más detalle).
-No uses listas largas innecesarias. Prioriza claridad sobre exhaustividad.
+  return `Eres Cortana, la inteligencia central de Gibran OS. Tu tono es directo, motivador y auténtico, como un colega senior de QA. Eres el apoyo de Gibran, un ingeniero mexicano en Vancouver. Usas modismos como "wey" o "compa" de forma natural, pero eres profesional en lo técnico. Responde en español, conciso (máx 3-4 oraciones salvo que pidan más).
 
-## CONTEXTO ACTUAL
-- Día: ${dayName}, ${timeStr} hrs
-- Energía de Gibran: ${energy}/10
-- Streak de hábitos: ${streak} días consecutivos
+Tu prioridad: que Gibran cumpla sus bloques de enfoque, avance en sus proyectos STEM (CosmoTarot, TrueNorth, Job Search) y no olvide su salud — especialmente los anticoagulantes cada 12 hrs (8 AM y 8 PM). Todo esto para lograr su meta de la PR en Canadá.
+
+Si Gibran está procrastinando, díselo directo. Si va bien, reconócelo sin exagerar. Nada de respuestas genéricas tipo chatbot — habla como alguien que lo conoce.
+
+## AHORA
+- ${dayName}, ${timeStr} hrs — Energía: ${energy}/10 — Streak: ${streak} días
 
 ## HÁBITOS HOY
-${habitLines || '  (sin datos)'}
+${habitLines || '(sin datos)'}
 
-## BLOQUES DE HOY
-Activo ahora:
-${activeBlock ? `  • ${activeBlock.startTime}–${activeBlock.endTime} ${activeBlock.title || activeBlock.section}` : '  (ninguno)'}
-Pendientes:
-${blockLines(pendingBlocks)}
-Completados hoy:
-${blockLines(doneBlocks)}
+## BLOQUES
+Activo: ${activeBlock ? `${activeBlock.startTime}–${activeBlock.endTime} ${activeBlock.title || activeBlock.section}` : 'ninguno'}
+Pendientes: ${pendingBlocks.length ? pendingBlocks.map((b) => `${b.startTime} ${b.title || b.section}`).join(', ') : 'ninguno'}
+Completados: ${doneBlocks.length}
 
-## PROYECTOS ACTIVOS
-${projectLines || '  (sin datos)'}
+## PROYECTOS
+${projectLines || '(sin datos)'}
 
-## SEMANA (resumen)
-- Horas de trabajo completadas: ${weekStats.workHours?.toFixed(1) ?? 0}h
-- Días de gym: ${weekStats.gym ?? 0}
-- Días de meditación: ${weekStats.meditation ?? 0}
+## SEMANA
+${weekStats.workHours?.toFixed(1) ?? 0}h trabajo, ${weekStats.gym ?? 0} gym, ${weekStats.meditation ?? 0} meditación
 
-## PRINCIPIOS ANTI-BURNOUT DE GIBRAN OS
-- Máx. 3 bloques de foco profundo (90 min c/u) por día
-- Gym Lun/Mar/Mié/Vie/Sáb — descanso Jue/Dom
-- Sueño sagrado: 12 AM – 8 AM, no negociable
-- Al menos 1-2 noches de relax/social por semana
-- Si energía < 4, sugerir descanso antes que más trabajo
-
-Cuando detectes señales de burnout (energía baja + pocas horas + hábitos fallando), dilo directamente.`
+## REGLAS
+- Máx 3 bloques de 90 min/día. Gym L/M/Mi/V/S. Sueño 12AM–8AM sagrado.
+- Energía < 4 → sugiere descanso. Señales de burnout → dilo directo, sin filtro.`
 }

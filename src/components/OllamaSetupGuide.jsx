@@ -80,9 +80,9 @@ export default function OllamaSetupGuide({ onRetry }) {
           }}>
             2. TENER EL MODELO INSTALADO
           </div>
-          <CodeBlock>$ ollama pull gemma4:e4b</CodeBlock>
+          <CodeBlock>$ ollama pull llama3.2:3b</CodeBlock>
           <div style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--mono)' }}>
-            descarga ~3.5GB — cierra otras apps
+            descarga ~2GB — rapido y ligero
           </div>
         </div>
 

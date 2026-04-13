@@ -27,7 +27,7 @@ Semana: ${weekStats.workHours?.toFixed(1) || 0}h trabajo, ${weekStats.gym || 0} 
 
   let fullResponse = ''
   try {
-    for await (const chunk of chat(messages, 'gemma4:e4b', null, false)) {
+    for await (const chunk of chat(messages, 'llama3.2:3b', null, false)) {
       fullResponse += chunk
     }
     return JSON.parse(fullResponse.trim())
