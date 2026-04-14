@@ -71,7 +71,7 @@ const useProjectStore = create(
           if (mvpCount >= MVP_WIP_LIMIT) {
             set({
               wipWarning: {
-                message: `Aguanta, compa. Ya tienes ${mvpCount} tareas en el MVP. Termina lo que tienes antes de abrir más frentes.`,
+                message: `Gibran, ya tienes ${mvpCount} tareas activas en el MVP. Te sugiero cerrar una antes de agregar otra — el foco paga más que el multitasking.`,
                 timestamp: Date.now(),
               }
             })
