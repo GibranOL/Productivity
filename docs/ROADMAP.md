@@ -8,4 +8,4 @@
 | 4      | Project Kanban     | Tablero estilo Jira para proyectos (CosmoTarot, etc.)            | DONE         |
 | 5      | Job Tracker        | Seguimiento de vacantes STEM, analisis de JD y metas de PR       | DONE         |
 | 6      | Hypertrophy & Diet | Plan de 5 comidas y rutinas de gym (5 dias/semana)               | DONE         |
-| 7      | Wellness & Bio     | Logs de sueno, humor y meditacion sincronizados                  | Pendiente    |
+| 7      | Wellness & Bio     | Logs de sueno, humor y meditacion sincronizados                  | DONE         |

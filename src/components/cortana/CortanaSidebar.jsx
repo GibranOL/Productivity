@@ -7,6 +7,7 @@ import useJobStore from '../../store/jobStore'
 import { checkOllamaStatus, chat, buildSystemPromptWithMemory } from '../../services/ollamaService'
 import { getTodayDow } from '../../utils/date'
 import { getHealthContext } from '../../lib/healthCheck'
+import { getWellnessContext } from '../../lib/recoveryAnalysis'
 
 // ─── Quick Actions ───────────────────────────────────────────────────────────
 const QUICK_ACTIONS = [
@@ -139,6 +140,9 @@ export default function CortanaSidebar({ onClose }) {
     // Health context
     const health = getHealthContext()
 
+    // Wellness / recovery context (sleep, mood, meditation, correlations)
+    const wellness = getWellnessContext()
+
     return {
       dow, hour,
       todayBlocks,
@@ -157,6 +161,7 @@ export default function CortanaSidebar({ onClose }) {
       jobPipeline: pipelineCounts,
       staleJobs: staleJobs.map((j) => j.company),
       health,
+      wellness,
     }
   }
 

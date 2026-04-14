@@ -3,14 +3,19 @@ import MedTracker from './MedTracker'
 import MealChecklist from './MealChecklist'
 import HydrationTracker from './HydrationTracker'
 import WorkoutLogger from './WorkoutLogger'
+import SleepTracker from '../wellness/SleepTracker'
+import MoodGrid from '../wellness/MoodGrid'
+import MeditationTimer from '../wellness/MeditationTimer'
 import useGymStore from '../../store/gymStore'
 import useDietStore from '../../store/dietStore'
+import useWellnessStore from '../../store/wellnessStore'
 import { Card } from '../UI'
 
 const SUB_TABS = [
-  { id: 'overview', label: 'Overview', icon: '📊' },
-  { id: 'gym',      label: 'Gym',      icon: '🏋️' },
+  { id: 'overview',  label: 'Overview',  icon: '📊' },
+  { id: 'gym',       label: 'Gym',       icon: '🏋️' },
   { id: 'nutrition', label: 'Nutrición', icon: '🍽️' },
+  { id: 'wellness',  label: 'Bienestar', icon: '🧘' },
 ]
 
 export default function TabHealth() {
@@ -74,6 +79,13 @@ export default function TabHealth() {
           <MealChecklist />
         </div>
       )}
+      {subTab === 'wellness' && (
+        <div className="stack" style={{ gap: 14 }}>
+          <SleepTracker />
+          <MoodGrid />
+          <MeditationTimer />
+        </div>
+      )}
     </div>
   )
 }
@@ -90,6 +102,10 @@ function OverviewSection() {
   const getMealsConsumedCount = useDietStore((s) => s.getMealsConsumedCount)
   const getTodayHydration = useDietStore((s) => s.getTodayHydration)
 
+  const getTodaySleep = useWellnessStore((s) => s.getTodaySleep)
+  const getReadiness = useWellnessStore((s) => s.getDeepWorkReadiness)
+  const getMeditationStreak = useWellnessStore((s) => s.getMeditationStreak)
+
   const streak = getGymStreak()
   const weeklyVol = getWeeklyVolume()
   const gymDay = isGymDay()
@@ -99,6 +115,10 @@ function OverviewSection() {
 
   const meals = getMealsConsumedCount()
   const { current: water, goal: waterGoal } = getTodayHydration()
+
+  const sleep = getTodaySleep()
+  const readiness = getReadiness()
+  const medStreak = getMeditationStreak()
 
   return (
     <div className="stack" style={{ gap: 14 }}>
@@ -144,6 +164,33 @@ function OverviewSection() {
           }
           icon={todaySplit?.icon || '🧘'}
           sub={todaySplit?.label}
+        />
+      </div>
+
+      {/* Wellness stat row */}
+      <div className="grid-3">
+        <StatBox
+          label="SUEÑO"
+          value={sleep ? `${sleep.hours}h` : '—'}
+          unit={sleep ? `q${sleep.quality}/5` : ''}
+          color={!sleep ? 'var(--text-dim)' : sleep.hours >= 7 ? 'var(--green)' : sleep.hours >= 6 ? 'var(--teal)' : 'var(--red)'}
+          icon="🌙"
+        />
+        <StatBox
+          label="READINESS"
+          value={readiness.tier === 'beast' ? 'BEAST' :
+                 readiness.tier === 'strong' ? 'STRONG' :
+                 readiness.tier === 'saver'  ? 'SAVER' :
+                 readiness.tier === 'normal' ? 'OK' : '—'}
+          color={readiness.color}
+          icon={readiness.tier === 'beast' ? '🔥' : readiness.tier === 'saver' ? '🔋' : '⚡'}
+        />
+        <StatBox
+          label="ZEN"
+          value={medStreak}
+          unit="días"
+          color={medStreak > 0 ? 'var(--purple)' : 'var(--text-dim)'}
+          icon="🧘"
         />
       </div>
 

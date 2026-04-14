@@ -1,7 +1,9 @@
 import useStore from '../store/index'
+import useWellnessStore from '../store/wellnessStore'
 import { defaultDayLog } from '../store/index'
 import { Card, Btn, ProgressBar, Badge, SectionTitle, Toggle } from './UI'
 import { getCircadianInsight, getDaySchedule, getTodayDow, getTonightPlan, isGymDay, getDayKey } from '../utils/date'
+import SleepTracker from './wellness/SleepTracker'
 
 const TAG_COLORS = {
   work:  'var(--teal)',
@@ -35,8 +37,16 @@ export default function TabToday() {
   const log = useStore((s) => s.logs[getDayKey()] || defaultDayLog())
   const hasTarot = [2, 4, 6].includes(dow)
 
+  // Morning sleep prompt — show 8-11 AM if no sleep logged yet
+  const todaySleep = useWellnessStore((s) => s.getTodaySleep())
+  const hour = new Date().getHours()
+  const showSleepPrompt = !todaySleep && hour >= 8 && hour < 11
+
   return (
     <div className="stack" style={{ gap: 16, paddingBottom: 80 }}>
+      {/* ── MORNING SLEEP PROMPT (zero-friction entry 8-11 AM) ── */}
+      {showSleepPrompt && <SleepTracker />}
+
       {/* ── CIRCADIAN BANNER ── */}
       <div style={{
         background: insight.bg,

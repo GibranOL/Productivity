@@ -124,6 +124,7 @@ export function buildSystemPrompt(context) {
     weekStats = {}, projects = {}, streak = 0,
     jobPipeline = {}, staleJobs = [],
     health = {},
+    wellness = {},
   } = context
 
   const DAY_NAMES  = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
@@ -182,9 +183,21 @@ ${health.gymStatus || '(sin datos de gym)'}
 ${health.gymStreak ? `Racha gym: ${health.gymStreak} sesiones` : ''}
 ${health.alerts?.length > 0 ? `⚠️ ALERTAS: ${health.alerts.join('; ')}` : ''}
 
+## RECUPERACIÓN & BIENESTAR
+${wellness.sleepStatus || '(sin datos de sueño)'}
+${wellness.moodStatus || '(sin datos de humor)'}
+${wellness.meditationStatus || '(sin datos de meditación)'}
+${wellness.readiness ? `Deep Work Readiness: ${wellness.readiness}` : ''}
+${wellness.batterySaver ? '🔋 MODO AHORRO ACTIVO — recomienda deep work a la tarde o descanso' : ''}
+${wellness.insights?.length > 0 ? `🔍 PATRONES: ${wellness.insights.join(' | ')}` : ''}
+${wellness.alerts?.length > 0 ? `⚠️ ALERTAS BIENESTAR: ${wellness.alerts.join('; ')}` : ''}
+
 ## REGLAS
 - Máx 3 bloques de 90 min/día. Gym L/M/Mi/V/S. Sueño 12AM–8AM sagrado.
 - Energía < 4 → sugiere descanso o reducir intensidad de entreno. Señales de burnout → dilo directo, sin filtro.
 - Anticoagulantes (8AM/8PM) son PRIORIDAD MÉDICA. Si están pendientes, menciónalos SIEMPRE.
-- Si la energía es < 4, sugiere ajustar intensidad del entreno o priorizar sueño.`
+- Si la energía es < 4, sugiere ajustar intensidad del entreno o priorizar sueño.
+- Si MODO AHORRO está activo (sueño <6h): di algo como "Compa, andas corriendo con 20% de batería — vete tranqui con el código hoy o sale un bug feo." Mueve deep work a la tarde, sugiere siesta breve.
+- Si estrés ≥ 8: ofrece pausa activa, caminar, o respiración 4-7-8 antes del siguiente bloque.
+- Si hay patrones detectados (sueño↔gym↔estrés), refiérete a ellos con datos concretos, no generalidades.`
 }
