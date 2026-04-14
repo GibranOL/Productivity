@@ -161,6 +161,100 @@ const useDietStore = create(
           ),
         })),
 
+      // ─── MEDICATION TRACKING (Anticoagulants 8AM / 8PM) ──────
+      medLogs: {}, // { 'YYYY-MM-DD': { am: timestamp|null, pm: timestamp|null } }
+
+      logMed: (period) => {
+        const date = new Date().toISOString().slice(0, 10)
+        const now = new Date().toISOString()
+        set((s) => ({
+          medLogs: {
+            ...s.medLogs,
+            [date]: {
+              ...(s.medLogs[date] || { am: null, pm: null }),
+              [period]: now,
+            },
+          },
+        }))
+      },
+
+      unlogMed: (period) => {
+        const date = new Date().toISOString().slice(0, 10)
+        set((s) => ({
+          medLogs: {
+            ...s.medLogs,
+            [date]: {
+              ...(s.medLogs[date] || { am: null, pm: null }),
+              [period]: null,
+            },
+          },
+        }))
+      },
+
+      getTodayMeds: () => {
+        const date = new Date().toISOString().slice(0, 10)
+        return get().medLogs[date] || { am: null, pm: null }
+      },
+
+      isMedOverdue: (period) => {
+        const date = new Date().toISOString().slice(0, 10)
+        const meds = get().medLogs[date] || { am: null, pm: null }
+        if (meds[period]) return false
+        const now = new Date()
+        const totalMin = now.getHours() * 60 + now.getMinutes()
+        if (period === 'am') return totalMin >= 510  // 8:30
+        if (period === 'pm') return totalMin >= 1230  // 20:30
+        return false
+      },
+
+      // ─── HYDRATION TRACKING ───────────────────────────────────────
+      hydrationLogs: {}, // { 'YYYY-MM-DD': { current: liters, goal: liters } }
+
+      logWater: (liters) => {
+        const date = new Date().toISOString().slice(0, 10)
+        set((s) => {
+          const existing = s.hydrationLogs[date] || { current: 0, goal: 3 }
+          return {
+            hydrationLogs: {
+              ...s.hydrationLogs,
+              [date]: { ...existing, current: Math.max(0, Math.round((existing.current + liters) * 10) / 10) },
+            },
+          }
+        })
+      },
+
+      getTodayHydration: () => {
+        const date = new Date().toISOString().slice(0, 10)
+        return get().hydrationLogs[date] || { current: 0, goal: 3 }
+      },
+
+      // ─── MEAL COMPLETION TRACKING ─────────────────────────────────
+      mealCompletionLogs: {}, // { 'YYYY-MM-DD': { [mealKey]: boolean } }
+
+      toggleMealDone: (mealKey) => {
+        const date = new Date().toISOString().slice(0, 10)
+        set((s) => {
+          const dayLog = s.mealCompletionLogs[date] || {}
+          return {
+            mealCompletionLogs: {
+              ...s.mealCompletionLogs,
+              [date]: { ...dayLog, [mealKey]: !dayLog[mealKey] },
+            },
+          }
+        })
+      },
+
+      getTodayMealCompletion: () => {
+        const date = new Date().toISOString().slice(0, 10)
+        return get().mealCompletionLogs[date] || {}
+      },
+
+      getMealsConsumedCount: () => {
+        const date = new Date().toISOString().slice(0, 10)
+        const log = get().mealCompletionLogs[date] || {}
+        return Object.values(log).filter(Boolean).length
+      },
+
       // ─── SELECTORS ───────────────────────────────────────────────
       getTodayMeals: () => {
         const { templates, getTemplateForDate } = get()
@@ -188,7 +282,7 @@ const useDietStore = create(
     {
       name: 'gibran-os-diet-v1',
       storage: createJSONStorage(() => localStorage),
-      version: 1,
+      version: 2,
       migrate(persisted, fromVersion) {
         // v0 → v1: added rotationOverrides + inventory status field
         if (fromVersion < 1) {
@@ -200,6 +294,12 @@ const useDietStore = create(
             }))
           }
           if (!Array.isArray(persisted.cookingSteps)) persisted.cookingSteps = []
+        }
+        // v1 → v2: added medLogs, hydrationLogs, mealCompletionLogs
+        if (fromVersion < 2) {
+          if (!persisted.medLogs) persisted.medLogs = {}
+          if (!persisted.hydrationLogs) persisted.hydrationLogs = {}
+          if (!persisted.mealCompletionLogs) persisted.mealCompletionLogs = {}
         }
         return persisted
       },

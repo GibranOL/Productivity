@@ -5,6 +5,7 @@ import TabWeekly from './TabWeekly'
 import TabProjects from './TabProjects'
 import Scheduler from './Scheduler'
 import TabDiet from './diet/TabDiet'
+import TabHealth from './health/TabHealth'
 import TabAnalytics from './TabAnalytics'
 import AIAssistant from './AIAssistant'
 import CheckInModal from './CheckInModal'
@@ -20,6 +21,7 @@ const TABS = [
   { id: 'weekly',    label: 'Semana',    icon: '📅' },
   { id: 'scheduler', label: 'Scheduler', icon: '🗓' },
   { id: 'projects',  label: 'Proyectos', icon: '🚀' },
+  { id: 'health',    label: 'Salud',     icon: '💪' },
   { id: 'diet',      label: 'Dieta',     icon: '🥗' },
   { id: 'analytics', label: 'Analytics', icon: '📊' },
 ]
@@ -138,6 +140,7 @@ export default function Dashboard() {
         {activeTab === 'weekly'    && <TabWeekly />}
         {activeTab === 'scheduler' && <Scheduler />}
         {activeTab === 'projects'  && <TabProjects />}
+        {activeTab === 'health'    && <TabHealth />}
         {activeTab === 'diet'      && <TabDiet />}
         {activeTab === 'analytics' && <TabAnalytics />}
       </main>

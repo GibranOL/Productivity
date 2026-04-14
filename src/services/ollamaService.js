@@ -123,6 +123,7 @@ export function buildSystemPrompt(context) {
     dow, hour, todayBlocks = [], habits = {}, energy = 5,
     weekStats = {}, projects = {}, streak = 0,
     jobPipeline = {}, staleJobs = [],
+    health = {},
   } = context
 
   const DAY_NAMES  = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
@@ -173,7 +174,17 @@ ${weekStats.workHours?.toFixed(1) ?? 0}h trabajo, ${weekStats.gym ?? 0} gym, ${w
 ${jobPipeline.total ? `Total: ${jobPipeline.total} | Activas: ${jobPipeline.active} | Wishlist: ${jobPipeline.wishlist || 0} | Applied: ${jobPipeline.applied || 0} | Screening: ${jobPipeline.screening || 0} | Technical: ${jobPipeline.technical || 0} | Final: ${jobPipeline.final_interview || 0} | Offers: ${jobPipeline.offer || 0}` : '(sin vacantes registradas)'}
 ${staleJobs.length > 0 ? `⚠️ STALE (10+ días sin respuesta): ${staleJobs.join(', ')}` : ''}
 
+## SALUD
+${health.medStatus || '(sin datos de medicamento)'}
+${health.mealStatus || '(sin datos de comidas)'}
+${health.hydrationStatus || '(sin datos de hidratación)'}
+${health.gymStatus || '(sin datos de gym)'}
+${health.gymStreak ? `Racha gym: ${health.gymStreak} sesiones` : ''}
+${health.alerts?.length > 0 ? `⚠️ ALERTAS: ${health.alerts.join('; ')}` : ''}
+
 ## REGLAS
 - Máx 3 bloques de 90 min/día. Gym L/M/Mi/V/S. Sueño 12AM–8AM sagrado.
-- Energía < 4 → sugiere descanso. Señales de burnout → dilo directo, sin filtro.`
+- Energía < 4 → sugiere descanso o reducir intensidad de entreno. Señales de burnout → dilo directo, sin filtro.
+- Anticoagulantes (8AM/8PM) son PRIORIDAD MÉDICA. Si están pendientes, menciónalos SIEMPRE.
+- Si la energía es < 4, sugiere ajustar intensidad del entreno o priorizar sueño.`
 }

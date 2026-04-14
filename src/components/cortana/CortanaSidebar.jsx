@@ -6,6 +6,7 @@ import useAIMemoryStore from '../../store/aiMemoryStore'
 import useJobStore from '../../store/jobStore'
 import { checkOllamaStatus, chat, buildSystemPromptWithMemory } from '../../services/ollamaService'
 import { getTodayDow } from '../../utils/date'
+import { getHealthContext } from '../../lib/healthCheck'
 
 // ─── Quick Actions ───────────────────────────────────────────────────────────
 const QUICK_ACTIONS = [
@@ -135,6 +136,9 @@ export default function CortanaSidebar({ onClose }) {
         return (Date.now() - new Date(last.date).getTime()) / (1000*60*60*24) >= 10
       })
 
+    // Health context
+    const health = getHealthContext()
+
     return {
       dow, hour,
       todayBlocks,
@@ -152,6 +156,7 @@ export default function CortanaSidebar({ onClose }) {
       streak: streak?.count ?? 0,
       jobPipeline: pipelineCounts,
       staleJobs: staleJobs.map((j) => j.company),
+      health,
     }
   }
 

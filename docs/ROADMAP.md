@@ -7,5 +7,5 @@
 | 3      | Cortana AI         | Sidebar de chat. Integracion con Gemma 4 (local) o Gemini API    | IN PROGRESS  |
 | 4      | Project Kanban     | Tablero estilo Jira para proyectos (CosmoTarot, etc.)            | DONE         |
 | 5      | Job Tracker        | Seguimiento de vacantes STEM, analisis de JD y metas de PR       | DONE         |
-| 6      | Hypertrophy & Diet | Plan de 5 comidas y rutinas de gym (5 dias/semana)               | Pendiente    |
+| 6      | Hypertrophy & Diet | Plan de 5 comidas y rutinas de gym (5 dias/semana)               | DONE         |
 | 7      | Wellness & Bio     | Logs de sueno, humor y meditacion sincronizados                  | Pendiente    |
